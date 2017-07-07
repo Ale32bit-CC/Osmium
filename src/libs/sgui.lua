@@ -46,7 +46,7 @@ _G.aread = function( _sReplaceChar, _sDefault )
 	redraw()
 
 	while true do
-		local sEvent, param = os.pullEvent()
+		local sEvent, param, x,y = os.pullEvent()
 		if sEvent == "char" then
 			-- Typed key
 			clear()
@@ -106,6 +106,7 @@ _G.aread = function( _sReplaceChar, _sDefault )
 			redraw()
 
 		elseif sEvent == "mouse_click" then
+				os.queueEvent("mouse_click",param,x,y)
 				break
 			end
 	end
