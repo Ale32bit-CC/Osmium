@@ -1,4 +1,129 @@
-function create(viewport, _BG, _allowTerminate)
+_G.aread = function( _sReplaceChar, _sDefault )
+	if _sReplaceChar ~= nil and type( _sReplaceChar ) ~= "string" then
+		error( "bad argument #1 (expected string, got " .. type( _sReplaceChar ) .. ")", 2 )
+	end
+	if _sDefault ~= nil and type( _sDefault ) ~= "string" then
+		error( "bad argument #2 (expected string, got " .. type( _sDefault ) .. ")", 2 )
+	end
+	term.setCursorBlink( true )
+--.
+	local sLine
+	if type( _sDefault ) == "string" then
+		sLine = _sDefault
+	else
+		sLine = ""
+	end
+	local nPos = #sLine
+	if _sReplaceChar then
+		_sReplaceChar = string.sub( _sReplaceChar, 1, 1 )
+	end
+
+	local w = term.getSize()
+	local sx = term.getCursorPos()
+
+	local function redraw( _bClear )
+		local nScroll = 0
+		if sx + nPos >= w then
+			nScroll = (sx + nPos) - w
+		end
+
+		local cx,cy = term.getCursorPos()
+		term.setCursorPos( sx, cy )
+		local sReplace = (_bClear and " ") or _sReplaceChar
+		if sReplace then
+			term.write( string.rep( sReplace, math.max( string.len(sLine) - nScroll, 0 ) ) )
+		else
+			term.write( string.sub( sLine, nScroll + 1 ) )
+		end
+
+		term.setCursorPos( sx + nPos - nScroll, cy )
+	end
+
+	local function clear()
+		redraw( true )
+	end
+
+	redraw()
+
+	while true do
+		local sEvent, param = os.pullEvent()
+		if sEvent == "char" then
+			-- Typed key
+			clear()
+			sLine = string.sub( sLine, 1, nPos ) .. param .. string.sub( sLine, nPos + 1 )
+			nPos = nPos + 1
+			recomplete()
+			redraw()
+
+		elseif sEvent == "paste" then
+			-- Pasted text
+			clear()
+			sLine = string.sub( sLine, 1, nPos ) .. param .. string.sub( sLine, nPos + 1 )
+			nPos = nPos + string.len( param )
+			redraw()
+
+		elseif sEvent == "key" then
+			if param == keys.enter then
+				-- Enter
+				break
+
+			elseif param == keys.backspace then
+				-- Backspace
+				if nPos > 0 then
+					clear()
+					sLine = string.sub( sLine, 1, nPos - 1 ) .. string.sub( sLine, nPos + 1 )
+					nPos = nPos - 1
+					redraw()
+				end
+
+			elseif param == keys.home then
+				-- Home
+				if nPos > 0 then
+					clear()
+					nPos = 0
+					redraw()
+				end
+
+			elseif param == keys.delete then
+				-- Delete
+				if nPos < string.len(sLine) then
+					clear()
+					sLine = string.sub( sLine, 1, nPos ) .. string.sub( sLine, nPos + 2 )
+					redraw()
+				end
+
+			elseif param == keys["end"] then
+				-- End
+				if nPos < string.len(sLine ) then
+					clear()
+					nPos = string.len(sLine)
+					redraw()
+				end
+			end
+
+		elseif sEvent == "term_resize" then
+			-- Terminal resized
+			w = term.getSize()
+			redraw()
+
+		elseif sEvent == "mouse_click" then
+				break
+			end
+	end
+
+	local cx, cy = term.getCursorPos()
+	term.setCursorBlink( false )
+	term.setCursorPos( w + 1, cy )
+	print()
+
+	return sLine
+end
+
+
+
+
+
+	function create(viewport, _BG, _allowTerminate)
 	local obj = {}
 	local bg = _BG or colors.black
 	local vp = viewport
@@ -142,7 +267,7 @@ function create(viewport, _BG, _allowTerminate)
 		local old = term.current()
 		term.redirect(svp)
 		if elements[id].rep == false then elements[id].rep = nil end
-		local input = read(elements[id].rep,nil,nil,elements[id].text)
+		local input = aread(elements[id].rep, elements[id].text)
 		term.redirect(old)
 		elements[id].text = input
 		elements[id].callback(input)
