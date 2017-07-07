@@ -52,7 +52,6 @@ _G.aread = function( _sReplaceChar, _sDefault )
 			clear()
 			sLine = string.sub( sLine, 1, nPos ) .. param .. string.sub( sLine, nPos + 1 )
 			nPos = nPos + 1
-			recomplete()
 			redraw()
 
 		elseif sEvent == "paste" then
