@@ -124,9 +124,28 @@ function create(viewport, _BG, _allowTerminate)
 	local bg = _BG or colors.black
 	local vp = viewport
 	local elements = {}
+	local timers = {}
 	local at = _allowTerminate or true
 	local lastid = 1
 	local stop = false
+	
+	function obj.deleteTimer(id)
+		os.cancelTimer(id)
+		for i=1,#timers do
+			if timers[i].id == id then
+				table.remove(timers,i)
+			end
+		end
+	end
+	
+	function obj.addTimer(time,callback)
+		local id = os.startTimer(time)
+		timers[#timers+1] = {id=id,callback=callback}
+		return id
+	end
+	
+	
+	
 	function obj.deleteItem(targetid)
 		for i=1,#elements do
 			if elements[i].id == targetid then
@@ -451,10 +470,10 @@ function create(viewport, _BG, _allowTerminate)
 		stop = true
 		os.queueEvent("_")
 	end
-	function obj.go()
+	function handleMouse()
 		while stop == false do
-		local ev = {os.pullEventRaw()}
-		if ev[1] == "terminate" and at == true then break end
+		local ev = {os.pullEventRaw("mouse_click")}
+		
 		for i=1,#elements do
 			if elements[i].element == "BTN" then
 				if ev[1] == "mouse_click" then
@@ -489,6 +508,33 @@ function create(viewport, _BG, _allowTerminate)
 		obj.redraw()
 		end
 	end
-
+	
+	function stopSignalHandler()
+		while true do
+			local ev = {os.pullEventRaw()}
+			if ev[1] == "terminate" and at == true then break end
+			if ev[1] == "_" then break end
+		end
+		vp.setBackgroundColor(colors.black)
+		vp.setTextColor(colors.white)
+		vp.setCursorPos(1,1)
+		vp.clear()
+	end
+	
+	function timerHandler()
+		while true do
+			local ev = {os.pullEventRaw("timer")
+			for i=1,#timers do
+				if ev[2] == timers[i].id then
+					timers[i].callback()
+				end
+			end
+		end
+	end
+	
+	function obj.go()
+		parallel.waitForAny(stopSignalHandler,handleMouse)	
+	end
+	
 	return obj
 end
