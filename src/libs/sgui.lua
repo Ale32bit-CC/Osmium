@@ -473,6 +473,7 @@ function create(viewport, _BG, _allowTerminate)
 		os.queueEvent("_")
 	end
 	function handleMouse()
+		obj.redraw()
 		while stop == false do
 		local ev = {os.pullEventRaw("mouse_click")}
 		
