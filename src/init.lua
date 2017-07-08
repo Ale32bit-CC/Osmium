@@ -35,6 +35,8 @@ end
   task.kill(pid)
   task.launch(function, process name)
   task.getInfo(): returns processes list
+
+  Proc multitask by MultMine
 ]]--
 
 local _proc = {}
