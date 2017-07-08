@@ -440,7 +440,10 @@ function create(viewport, _BG, _allowTerminate)
 		vp.setTextColor(buttonfg)
 		vp.setBackgroundColor(buttonbg)
 		vp.write("OK")
-		os.pullEvent("mouse_click")
+		local ev
+		repeat
+			ev = os.pullEvent()
+		until ev == "mouse_click" or ev == "key"
 		obj.redraw()
 	end
 	
