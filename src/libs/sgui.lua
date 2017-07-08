@@ -523,7 +523,7 @@ function create(viewport, _BG, _allowTerminate)
 	
 	function timerHandler()
 		while true do
-			local ev = {os.pullEventRaw("timer")
+			local ev = {os.pullEventRaw("timer")}
 			for i=1,#timers do
 				if ev[2] == timers[i].id then
 					timers[i].callback()
@@ -533,7 +533,7 @@ function create(viewport, _BG, _allowTerminate)
 	end
 	
 	function obj.go()
-		parallel.waitForAny(stopSignalHandler,handleMouse)	
+		parallel.waitForAny(stopSignalHandler,handleMouse,timerHandler)	
 	end
 	
 	return obj
