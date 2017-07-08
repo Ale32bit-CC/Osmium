@@ -127,6 +127,7 @@ function create(viewport, _BG, _allowTerminate)
 	local timers = {}
 	local at = _allowTerminate or true
 	local lastid = 1
+	local lasttimerid = 1
 	local stop = false
 	
 	function obj.deleteTimer(id)
@@ -140,8 +141,9 @@ function create(viewport, _BG, _allowTerminate)
 	
 	function obj.addTimer(time,callback)
 		local id = os.startTimer(time)
-		timers[#timers+1] = {id=id,callback=callback}
-		return id
+		timers[#timers+1] = {id=lasttimerid + 1,callback=callback,evid=id, time=time}
+		lasttimerid = lasttimerid + 1		
+		return lasttimerid
 	end
 	
 	
@@ -525,8 +527,10 @@ function create(viewport, _BG, _allowTerminate)
 		while true do
 			local ev = {os.pullEventRaw("timer")}
 			for i=1,#timers do
-				if ev[2] == timers[i].id then
+				if ev[2] == timers[i].evid then
 					timers[i].callback()
+					local a = os.startTimer(timers[i].time)
+					timers[i] = {callback=timers[i].callback,evid=a,id=timers[i].id,time=timers[i].time}
 				end
 			end
 		end
