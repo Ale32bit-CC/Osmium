@@ -119,11 +119,7 @@ _G.aread = function( _sReplaceChar, _sDefault )
 	return sLine
 end
 
-
-
-
-
-	function create(viewport, _BG, _allowTerminate)
+function create(viewport, _BG, _allowTerminate)
 	local obj = {}
 	local bg = _BG or colors.black
 	local vp = viewport
@@ -272,6 +268,109 @@ end
 		elements[id].text = input
 		elements[id].callback(input)
 	end
+	function obj.addImage(image,x,y)
+		elements[#elements+1] = {element="IMG",x=x,y=y,image=image, id=lastid+1}
+		local id = lastid + 1
+		lastid = lastid + 1
+		return id
+	end
+	function obj.alterImage(id,_image,_x,_y)
+		for i=1,#elements do
+			if id == elements[i].id then
+				local image = _image or elements[i].image
+				local x = _x or elements[i].x
+				local y = _y or elements[i].y
+				elements[i] = {element="IMG",id=id,image=image,x=x,y=y}
+			end
+		end
+	end
+	
+	function drawImage(index)
+		local oldterm = term.current()
+		term.redirect(vp)
+		paintutils.drawImage(elements[index].image,elements[index].x,elements[index].y)
+		term.redirect(oldterm)
+	end
+	
+	function obj.addFilledBox(x,y,x2,y2,color)
+		elements[#elements+1] = {element="FBX",x=x,y=y,x2=x2,y2=y2,color=color}
+		local id = lastid + 1
+		lastid = lastid + 1
+		return id
+	end
+	function obj.alterFilledBox(id,_x,_y,_x2,_y2,_color)
+		for i=1,#elements do
+			if id == elements[i].id then
+				local x = _x or elements[i].x
+				local y = _y or elements[i].y
+				local x2 = _x2 or elements[i].x2
+				local y2 = _y2 or elements[i].y2
+				local color = _color or elements[i].color
+				elements[i] = {element="FBX",id=id,x=x,y=y,x2=x2,y2=y2,color=color}
+			end
+		end
+	end
+	
+	function drawFilledBox(index)
+		local oldterm = term.current()
+		term.redirect(vp)
+		paintutils.drawFilledBox(elements[index].x,elements[index].y,elements[index].x2,elements[index].y2,elements[index].color)
+		term.redirect(oldterm)
+	end	
+	
+	function obj.addBox(x,y,x2,y2,color)
+		elements[#elements+1] = {element="BOX",x=x,y=y,x2=x2,y2=y2,color=color}
+		local id = lastid + 1
+		lastid = lastid + 1
+		return id
+	end
+	function obj.alterBox(id,_x,_y,_x2,_y2,_color)
+		for i=1,#elements do
+			if id == elements[i].id then
+				local x = _x or elements[i].x
+				local y = _y or elements[i].y
+				local x2 = _x2 or elements[i].x2
+				local y2 = _y2 or elements[i].y2
+				local color = _color or elements[i].color
+				elements[i] = {element="BOX",id=id,x=x,y=y,x2=x2,y2=y2,color=color}
+			end
+		end
+	end
+	
+	function drawBox(index)
+		local oldterm = term.current()
+		term.redirect(vp)
+		paintutils.drawBox(elements[index].x,elements[index].y,elements[index].x2,elements[index].y2,elements[index].color)
+		term.redirect(oldterm)
+	end
+	
+	
+	function obj.addLine(x,y,x2,y2,color)
+		elements[#elements+1] = {element="LNE",x=x,y=y,x2=x2,y2=y2,color=color}
+		local id = lastid + 1
+		lastid = lastid + 1
+		return id
+	end
+	function obj.alterLine(id,_x,_y,_x2,_y2,_color)
+		for i=1,#elements do
+			if id == elements[i].id then
+				local x = _x or elements[i].x
+				local y = _y or elements[i].y
+				local x2 = _x2 or elements[i].x2
+				local y2 = _y2 or elements[i].y2
+				local color = _color or elements[i].color
+				elements[i] = {element="LNE",id=id,x=x,y=y,x2=x2,y2=y2,color=color}
+			end
+		end
+	end
+	
+	function drawLine(index)
+		local oldterm = term.current()
+		term.redirect(vp)
+		paintutils.drawLine(elements[index].x,elements[index].y,elements[index].x2,elements[index].y2,elements[index].color)
+		term.redirect(oldterm)
+	end
+	
 	
 	function obj.redraw()
 		vp.setBackgroundColor(bg)
@@ -285,6 +384,18 @@ end
 			end
 			if elements[i].element == "INP" then
 				drawInput(i)
+			end
+			if elements[i].element == "IMG" then
+				drawImage(i)
+			end
+			if elements[i].element == "FBX" then
+				drawFilledBox(i)
+			end
+			if elements[i].element == "BOX" then
+				drawBox(i)
+			end
+			if elements[i].element == "LNE" then
+				drawBox(i)
 			end
 		end
 	end
@@ -332,6 +443,7 @@ end
 		os.pullEvent("mouse_click")
 		obj.redraw()
 	end
+	
 	function obj.exit()
 		stop = true
 		os.queueEvent("_")
