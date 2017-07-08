@@ -406,8 +406,8 @@ function create(viewport, _BG, _allowTerminate)
 		local bcol = _border or colors.blue
 		local titlecol = _titlefg or colors.white
 		local title = _title or "Alert"
-		local mcolbg = _middlebg or colors.white
-		local mcolfg = _middlefg or colors.black
+		local mcolbg = _middlebg or colors.lightBlue
+		local mcolfg = _middlefg or colors.white
 		local buttonbg = _buttonbg or colors.lightBlue
 		local buttonfg = _buttonfg or colors.white
 		vp.setCursorPos(xx-10,yy-2)
@@ -416,7 +416,7 @@ function create(viewport, _BG, _allowTerminate)
 		for i=1,20 do
 			vp.write(" ")
 		end
-		vp.setCursorPos(xx-10,yy-2)
+		vp.setCursorPos(xx-9,yy-2)
 		vp.write(title)
 		vp.setCursorPos(xx-10,yy-1)
 		for i=1,20 do
