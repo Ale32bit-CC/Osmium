@@ -152,6 +152,7 @@ function create(viewport, _BG, _allowTerminate)
 		for i=1,#elements do
 			if elements[i].id == targetid then
 				table.remove(elements,i)
+				break
 			end
 		end
 		obj.redraw()
@@ -488,6 +489,7 @@ function create(viewport, _BG, _allowTerminate)
 							--print("DOING STUFF")
 							--sleep(2)
 							elements[i].callback(elements[i].id)
+							break
 						end
 					end
 				end
@@ -502,6 +504,7 @@ function create(viewport, _BG, _allowTerminate)
 							--print("DOING STUFF")
 							--sleep(2)
 							handleInput(i)
+							break
 						end
 					end
 				end
