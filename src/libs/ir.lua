@@ -142,10 +142,18 @@ function create(viewport, _BG, _allowTerminate)
 	local vp = viewport
 	local elements = {}
 	local timers = {}
-	local at = _allowTerminate or true
+	local at
 	local lastid = 1
 	local lasttimerid = 1
 	local stop = false
+	
+	if _allowTerminate == true then
+		at = true
+	elseif _allowTerminate == false then
+		at = false
+	else
+		at = true
+	end
 	
 	function obj.deleteTimer(id)
 		os.cancelTimer(id)
