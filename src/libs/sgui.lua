@@ -395,7 +395,7 @@ function create(viewport, _BG, _allowTerminate)
 				drawBox(i)
 			end
 			if elements[i].element == "LNE" then
-				drawBox(i)
+				drawLine(i)
 			end
 		end
 	end
