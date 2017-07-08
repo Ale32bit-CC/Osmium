@@ -124,29 +124,9 @@ function create(viewport, _BG, _allowTerminate)
 	local bg = _BG or colors.black
 	local vp = viewport
 	local elements = {}
-	local timers = {}
 	local at = _allowTerminate or true
-	local lastid = 1
-	local lasttimerid = 1
+	local lastid = 1	
 	local stop = false
-	
-	function obj.deleteTimer(id)
-		os.cancelTimer(id)
-		for i=1,#timers do
-			if timers[i].id == id then
-				table.remove(timers,i)
-			end
-		end
-	end
-	
-	function obj.addTimer(time,callback)
-		local id = os.startTimer(time)
-		timers[#timers+1] = {id=lasttimerid + 1,callback=callback,evid=id, time=time}
-		lasttimerid = lasttimerid + 1		
-		return lasttimerid
-	end
-	
-	
 	
 	function obj.deleteItem(targetid)
 		for i=1,#elements do
@@ -522,31 +502,9 @@ function create(viewport, _BG, _allowTerminate)
 		vp.setCursorPos(1,1)
 		vp.clear()
 	end
-	
-	function timerHandler()
-		while true do
-			local ev = {os.pullEventRaw("timer")}
-			for i=1,#timers do
-				if ev[2] == timers[i].evid then
-					print(timers[i].evid)
-					print(timers[i].time)
-					print(timers[i].id)
-					print(string.dump(timers[i].callback))
-					sleep(5)
-					timers[i].callback()
-					local a = os.startTimer(timers[i].time)
-					local call = timers[i].callback
-					local evid = a
-					local time = timers[i].time
-					local id = timers[i].id
-					timers[i] = {callback = call, evid = evid, time = time, id = id}
-				end
-			end
-		end
-	end
-	
+
 	function obj.go()
-		parallel.waitForAny(stopSignalHandler,handleMouse,timerHandler)	
+		parallel.waitForAny(stopSignalHandler,handleMouse)	
 	end
 	
 	return obj
