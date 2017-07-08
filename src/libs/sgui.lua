@@ -530,7 +530,11 @@ function create(viewport, _BG, _allowTerminate)
 				if ev[2] == timers[i].evid then
 					timers[i].callback()
 					local a = os.startTimer(timers[i].time)
-					timers[i] = {callback=timers[i].callback,evid=a,id=timers[i].id,time=timers[i].time}
+					local call = timers[i].callback
+					local evid = a
+					local time = timers[i].time
+					local id = timers[i].id
+					timers[i] = {callback = call, evid = evid, time = time, id = id}
 				end
 			end
 		end
