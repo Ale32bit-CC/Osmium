@@ -1,5 +1,5 @@
 --[[
-  sPhone 2.0
+  Osmium
   Init
 ]]--
 
