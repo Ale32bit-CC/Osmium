@@ -535,6 +535,7 @@ function create(viewport, _BG, _allowTerminate)
 					local time = timers[i].time
 					local id = timers[i].id
 					timers[i] = {callback = call, evid = evid, time = time, id = id}
+					obj.redraw()
 				end
 			end
 		end
@@ -543,6 +544,8 @@ function create(viewport, _BG, _allowTerminate)
 	function obj.go()
 		parallel.waitForAny(stopSignalHandler,handleMouse,timerHandler)	
 	end
+	
+	
 	
 	return obj
 end
