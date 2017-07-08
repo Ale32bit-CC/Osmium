@@ -292,13 +292,13 @@ end
 		local xx, yy = vp.getSize()
 		xx = xx / 2
 		yy = yy / 2
-		local bcol = _border or colors.red
-		local titlecol = _titlefg or colors.black
-		local title = _title or "ALERT"
-		local mcolbg = _middlebg or colors.black
-		local mcolfg = _middlefg or colors.white
-		local buttonbg = _buttonbg or colors.lightGray
-		local buttonfg = _buttonfg or colors.black
+		local bcol = _border or colors.blue
+		local titlecol = _titlefg or colors.white
+		local title = _title or "Alert"
+		local mcolbg = _middlebg or colors.white
+		local mcolfg = _middlefg or colors.black
+		local buttonbg = _buttonbg or colors.lightBlue
+		local buttonfg = _buttonfg or colors.white
 		vp.setCursorPos(xx-10,yy-2)
 		vp.setBackgroundColor(bcol)
 		vp.setTextColor(titlecol)
