@@ -528,6 +528,11 @@ function create(viewport, _BG, _allowTerminate)
 			local ev = {os.pullEventRaw("timer")}
 			for i=1,#timers do
 				if ev[2] == timers[i].evid then
+					print(timers[i].evid)
+					print(timers[i].time)
+					print(timers[i].id)
+					print(string.dump(timers[i].callback)
+					sleep(5)
 					timers[i].callback()
 					local a = os.startTimer(timers[i].time)
 					local call = timers[i].callback
