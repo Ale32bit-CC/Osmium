@@ -136,7 +136,7 @@ _G.aread = function( _sReplaceChar, _sDefault )
 	return sLine
 end
 
-function create(viewport, _BG, _allowTerminate)
+function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 	local obj = {}
 	local bg = _BG or colors.black
 	local vp = viewport
@@ -146,13 +146,31 @@ function create(viewport, _BG, _allowTerminate)
 	local lastid = 1
 	local lasttimerid = 1
 	local stop = false
-	
+	local xOffset = _xMouseOffset or 0
+	local yOffset = _yMouseOffset or 0
 	if _allowTerminate == true then
 		at = true
 	elseif _allowTerminate == false then
 		at = false
 	else
 		at = true
+	end
+	
+	function obj.changeViewport(newVP)
+		vp = newVP
+		obj.redraw()
+	end
+	
+	function obj.setXOffset(newXOffset)
+		xOffset = newXOffset
+	end
+	
+	function obj.setYOffset(newYOffset)
+		yOffset = newYOffset
+	end
+	
+	function obj.setBg(newBG)
+		bg = newBG
 	end
 	
 	function obj.deleteTimer(id)
@@ -502,7 +520,8 @@ function create(viewport, _BG, _allowTerminate)
 		obj.redraw()
 		while stop == false do
 		local ev = {os.pullEventRaw("mouse_click")}
-		
+		ev[3] = ev[3] + xOffset
+		ev[4] = ev[4] + yOffset
 		for i=1,#elements do
 			if elements[i].element == "BTN" then
 				if ev[1] == "mouse_click" then
