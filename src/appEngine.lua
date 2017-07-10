@@ -13,7 +13,7 @@ end
 
 if not nativeFS.exists("/.UserData/rom/readme") then
 	local f = nativeFS.open("/.UserData/rom/readme","w")
-	f.write("print(\"What ever you are doing, please stop it now.\nModifying system files can cause unexpected behaviour.\nIf you managed to access this file without putting your computer in a disk drive, please report the expoit to Ale32bit or Rahph.\")")
+	f.write("print(\"What ever you are doing, please stop it now.\\nModifying system files can cause unexpected behaviour.\\nIf you managed to access this file without putting your computer in a disk drive, please report the expoit to Ale32bit or Rahph.\")")
 	f.close()
 end
 
