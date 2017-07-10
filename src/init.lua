@@ -8,12 +8,24 @@ end
 shell = nil
 _G.osmium = {}
 
-local nativeLoadfile = loadfile
+
 
 local nativeFS = {}
 
 for k,v in pairs(_G.fs) do
     nativeFS[k] = v
+end
+
+local nativeLoadfile = function(file,env)
+    if not nativeFS.exists(file) then
+        return nil
+    end
+    local handle = nativeFS.open(file,"r")
+    local script = handle.readAll()
+    handle.close()
+    local func, err = load(script, nativeFS.getName( file ), "t", env)
+
+    return func, err
 end
 
 local panicMode = false
@@ -170,4 +182,4 @@ end
 if panicMode then -- shows error
     os.pullEventRaw("key")
 end
---_G.term = nil -- force shutdown computer
+_G.term = nil -- force shutdown computer
