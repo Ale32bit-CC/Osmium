@@ -130,4 +130,4 @@ end
 
 dofile("/.Osmium/vfs.lua")
 
-dofile("/rom/programs/shell.lua") --temp
+pcall(loadfile("/rom/programs/shell.lua")) --temp
