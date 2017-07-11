@@ -520,35 +520,37 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		obj.redraw()
 		while stop == false do
 		local ev = {os.pullEventRaw("mouse_click")}
-		ev[3] = ev[3] + xOffset
-		ev[4] = ev[4] + yOffset
-		for i=1,#elements do
-			if elements[i].element == "BTN" then
-				if ev[1] == "mouse_click" then
-					--print("Mouse click")
-					if ev[4] == elements[i].y then
-						--print("Y correct")
-						--print("X: " .. ev[3] .. " Y: " .. ev[4] .. elements[i].x .. " to " .. elements[i].x + #elements[i].text)
-						if ev[3] >= elements[i].x and ev[3] <= elements[i].x + #elements[i].text then
-							--print("DOING STUFF")
-							--sleep(2)
-							elements[i].callback(elements[i].id)
-							break
+		if ev[1] == "mouse_click" then
+			ev[3] = ev[3] + xOffset
+			ev[4] = ev[4] + yOffset
+			for i=1,#elements do
+				if elements[i].element == "BTN" then
+					if ev[1] == "mouse_click" then
+						--print("Mouse click")
+						if ev[4] == elements[i].y then
+							--print("Y correct")
+							--print("X: " .. ev[3] .. " Y: " .. ev[4] .. elements[i].x .. " to " .. elements[i].x + #elements[i].text)
+							if ev[3] >= elements[i].x and ev[3] <= elements[i].x + #elements[i].text then
+								--print("DOING STUFF")
+								--sleep(2)
+								elements[i].callback(elements[i].id)
+								break
+							end
 						end
 					end
 				end
-			end
-			if elements[i].element == "INP" then
-				if ev[1] == "mouse_click" then
-					--print("Mouse click")
-					if ev[4] == elements[i].y then
-						--print("Y correct")
-						--print("X: " .. ev[3] .. " Y: " .. ev[4] .. elements[i].x .. " to " .. elements[i].x + #elements[i].text)
-						if ev[3] >= elements[i].x and ev[3] <= elements[i].width then
-							--print("DOING STUFF")
-							--sleep(2)
-							handleInput(i)
-							break
+				if elements[i].element == "INP" then
+					if ev[1] == "mouse_click" then
+						--print("Mouse click")
+						if ev[4] == elements[i].y then
+							--print("Y correct")
+							--print("X: " .. ev[3] .. " Y: " .. ev[4] .. elements[i].x .. " to " .. elements[i].x + #elements[i].text)
+							if ev[3] >= elements[i].x and ev[3] <= elements[i].width then
+								--print("DOING STUFF")
+								--sleep(2)
+								handleInput(i)
+								break
+							end
 						end
 					end
 				end
