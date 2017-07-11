@@ -97,8 +97,6 @@ local function getFile(file, target)
 	return get(githubUser, githubRepo, githubBranch, file, target)
 end
 
-shell.setDir("")
-
 gui()
 
 local fileCount = 0
