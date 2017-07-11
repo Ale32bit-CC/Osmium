@@ -14,6 +14,8 @@ local files = {
     ["src/appEngine.lua"] = "/.Osmium/appEngine.lua",
     
     ["src/libs/ir.lua"] = "/.Osmium/libs/ir.lua",
+	["src/libs/sha256.lua"] = "/.Osmium/libs/sha256.lua",
+	["src/libs/db.lua"] = "/.Osmium/libs/db.lua",
     
     ["src/startup.lua"] = "/.Osmium/startup.lua",
     ["src/startup.lua"] = "/startup",

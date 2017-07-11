@@ -3,6 +3,17 @@ for k,v in pairs(_G.fs) do
     nativeFS[k] = v
 end
 
+local nativeLoadfile = function(file,env)
+    if not nativeFS.exists(file) then
+        return nil
+    end
+    local handle = nativeFS.open(file,"r")
+    local script = handle.readAll()
+    handle.close()
+    local func, err = load(script, nativeFS.getName( file ), "t", env)
+    return func, err 
+end
+
 if not nativeFS.exists("/.UserData") then
 	nativeFS.makeDir("/.UserData")
 end
@@ -22,6 +33,10 @@ if not nativeFS.exists("/.OsmiumApps") then
 end
 
 _G.appEngine = {}
+
+local opkSystem = { -- Put OPK ids that can't be altered
+
+}
 
 local configFile = "/.OsmiumApps/config"
 
@@ -66,10 +81,10 @@ function appEngine.exists(id)
 end
 
 function appEngine.install(path)
-    if not nativeFS.exists(path) or nativeFS.isDir(path) then
+    if not fs.exists(path) or fs.isDir(path) then
         return false, "not a file"
     end
-    local oopk = nativeFS.open(path,"r")
+    local oopk = fs.open(path,"r")
     if not oopk then --i'm an idiot..
         return false, "not opk"
     end
@@ -82,6 +97,10 @@ function appEngine.install(path)
     
     if not config.id then
         return false, "not opk, missing id"
+    end
+    
+    if opkSystem[config.id] then
+        return false, "system opk"
     end
     
     -- set configs
@@ -115,25 +134,113 @@ function appEngine.launch(id)
         dependencies = get(id,"dependencies") or {},
     }
     
+    local opkApi = {}
+    local function getPath(path)
+        path = path or ""
+        
+        local fullPath = nativeFS.combine(path,"")
+        
+        if fullPath:find("^%.OsmiumApps/" .. id) then
+            return path
+        end
+        
+        
+        fullPath = nativeFS.combine("/.OsmiumApps/" .. id .. "/",path or "")
+        
+        if fullPath:find("^%.OsmiumApps/" .. id) then
+            return fullPath
+        else
+            error("Path does not exist")
+        end
+    end
     
+    
+    opkApi.open = function(file,mode)
+        if mode ~= "r" and mode ~= "rb" then
+            error("File is read only")
+        else
+            return nativeFS.open(getPath(file,mode))
+        end
+    end
+    
+    opkApi.copy = function(source,target)
+        local handle = nativeFS.open(getPath(source),"r")
+        local file = handle.readAll()
+        handle.close()
+        local handle = fs.open(target,"w")
+        handle.write(file)
+        handle.close()
+    end
+    
+    local ok, err = pcall(setfenv(nativeLoadfile("/.OsmiumApps/"..id.."/main.lua"), setmetatable(
+        { --opk api
+            opk = opkApi,
+        },{__index = getfenv()}
+    )))
+    if not ok then
+        printError(err)
+    end
 end
 
 function appEngine.uninstall(id)
-    
+    if opkSystem[id] then
+        return false, "system opk"
+    end
+    if not appEngine.exists(id) then
+        return false, "not found"
+    end
+    local list
+    local f = nativeFS.open(configFile,"r")
+    if f then
+        list = textutils.unserialise(f.readAll())
+        f.close()
+    else
+        list = {}
+    end
+    list[id] = nil
+    local f = fs.open(configFile,"w")
+    f.write(textutils.serialise(list))
+    f.close()
+    nativeFS.delete("/.OsmiumApps/"..id)
+    return true
 end
 
 function appEngine.list()
-    
+    local f = nativeFS.open(configFile,"r")
+    if f then
+        local opks = textutils.unserialise(f.readAll())
+        f.close()
+        local opk = {}
+        for k,v in pairs(opks) do
+            table.insert(opk,k)
+        end
+        return opk
+    else
+        return {}
+    end
 end
 
 function appEngine.canAlter(id)
-    
+    if opkSystem[id] then
+        return false
+    end
+    return true
 end
 
 function appEngine.getInfo(id)
-    
+    local f = nativeFS.open(configFile,"r")
+    if f then
+        local opks = textutils.unserialise(f.readAll())
+        f.close()
+        if opks[id] then
+            return opks[id]
+        else
+            return nil
+        end
+    end
+    return nil
 end
 
 dofile("/.Osmium/vfs.lua")
 
-pcall(loadfile("/rom/programs/shell.lua")) --temp
+dofile("/rom/programs/shell.lua") --temp

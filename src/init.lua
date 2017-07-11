@@ -5,6 +5,92 @@
 if osmium then
     return
 end
+
+-- recovery
+
+local logo = { { 0, 0, 2048, 2048, 2048, 2048, 2048, 2048, }, { 0, 2048, 0, 0, 0, 0, 0, 0, 2048, }, { 2048, 0, 0, 0, 0, 0, 0, 0, 0, 2048, }, { 2048, 0, 0, 0, 0, 0, 0, 0, 0, 2048, 0, 0, 0, 0, 2048, 2048, 2048, 2048, }, { 2048, 0, 0, 0, 0, 0, 0, 0, 0, 2048, 0, 0, 0, 2048, }, { 2048, 0, 0, 0, 0, 0, 0, 0, 0, 2048, 0, 0, 0, 0, 2048, 2048, 2048, }, { 0, 2048, 0, 0, 0, 0, 0, 0, 2048, 0, 0, 0, 0, 0, 0, 0, 0, 2048, }, { 0, 0, 2048, 2048, 2048, 2048, 2048, 2048, 0, 0, 0, 0, 0, 2048, 2048, 2048, 2048, }, }
+
+local function centerWrite(text)
+    local w,h = term.getSize()
+    local _,y = term.getCursorPos()
+    term.setCursorPos(math.ceil(w/2)-math.ceil(#text/2),y)
+    write(text)
+end
+local w,h = term.getSize()
+local dev = false
+
+local function recovery()
+    local exit = false
+    local options = {
+        {"Wipe drive",function() 
+            -- not yet
+        end},
+        {"Update Osmium", function() 
+            -- not yet 
+        end},
+        {"Exit", function()
+            exit = true
+        end},
+        {"DEV: Load CraftOS",function() dev = true exit = true end,},
+    }
+    term.setBackgroundColor(colors.white)
+    term.setTextColor(colors.black)
+    term.clear()
+    term.setCursorPos(1,1)
+    print("Osmium recovery")
+    for k,v in ipairs(options) do
+        print(v[1])
+    end
+    local selected = 1
+    local old = 1
+    while not exit do
+        term.setCursorPos(1,old+1)
+        term.clearLine()
+        term.write(options[old][1])
+        term.setCursorPos(1,selected+1)
+        term.clearLine()
+        term.write("[ "..options[selected][1].." ]")
+        local _,k = os.pullEventRaw("key")
+        old = selected
+        if k == keys.up then
+            selected = selected-1
+        elseif k == keys.down then
+            selected = selected+1
+        elseif k == keys.enter then
+            options[selected][2]()
+        end
+        if selected < 1 then
+            selected = 1
+        elseif selected > #options then
+            selected = #options
+        end
+    end
+end
+
+term.setBackgroundColor(colors.lightBlue)
+term.setTextColor(colors.white)
+term.clear()
+term.setCursorPos(1,2)
+centerWrite("Osmium")
+term.setCursorPos(1,h)
+centerWrite("Press ALT to access recovery")
+paintutils.drawImage(logo,math.ceil(w/2)-math.ceil(#logo[#logo]/2),math.ceil(h/2)-math.ceil(#logo/2))
+local timer = os.startTimer(1) --access time
+while true do
+    local ev = {os.pullEventRaw()}
+    if ev[1] == "timer" and ev[2] == timer then
+        break
+    elseif ev[1] == "key" and ev[2] == keys.leftAlt then
+        recovery()
+        break
+    end
+end
+if dev then
+    return
+end
+
+
+
 shell = nil
 _G.osmium = {}
 
