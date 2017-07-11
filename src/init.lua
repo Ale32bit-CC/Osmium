@@ -26,7 +26,7 @@ local function recovery()
             -- not yet
         end},
         {"Update Osmium", function() 
-            -- not yet 
+            local ok,err = pcall(setfenv(loadstring(http.get("https://raw.github.com/Ale32bit/Osmium/master/src/installer.lua").readAll()),getfenv()))
         end},
         {"Exit", function()
             exit = true
