@@ -22,10 +22,10 @@ local dev = false
 local function recovery()
     local exit = false
     local options = {
-        {"Wipe drive",function()
+        {"Wipe drive",function() 
             -- not yet
         end},
-        {"Update Osmium", function()
+        {"Update Osmium", function() 
             local ok,err = pcall(setfenv(loadstring(http.get("https://raw.github.com/Ale32bit/Osmium/master/src/installer.lua").readAll()),getfenv()))
         end},
         {"Exit", function()
@@ -120,7 +120,7 @@ term.setTextColor(colors.white)
 term.clear()
 term.setCursorPos(1,1)
 
-local function panic(err) -- crash
+local function panic(err) -- crash 
     panicMode = true
     pcall(function()
         for k,v in ipairs(task.getInfo()) do -- kill all processes
@@ -140,7 +140,7 @@ local function panic(err) -- crash
     print("Please report to the developers")
 end
 
-local function init()
+local function init() 
     local ok, err = pcall(setfenv(nativeLoadfile("/.Osmium/appEngine.lua"),setmetatable({
             nFS = nativeFS,
         },{__index = getfenv()})))
@@ -171,7 +171,7 @@ function osmium.require(lib)
     elseif _G[lib] and type(_G[lib]) == "table" then
         return _G[lib]
     end
-
+    
     local tEnv = {}
     setmetatable(tEnv,{__index = _G})
     local fnAPI, err = nativeLoadfile( lib, tEnv)
@@ -185,7 +185,7 @@ function osmium.require(lib)
         printError(err)
         return nil
     end
-
+    
     local tAPI = {}
     for k,v in pairs( tEnv ) do
         if k ~= "_ENV" then
@@ -225,15 +225,8 @@ function task.kill(pid)
   _killProc[pid] = true
 end
 function task.launch(fn, name)
-  local env = {}
-  local env.os = {}
-  local m_env = getfenv()
-  setmetatable(env,{__index = m_env})
-  setmetatable(env.os,{__index = m_env.os})
-  env.pid = "HELOO"
-
-  _proc[env.pid] = {
-    co = coroutine.create(setfenv(fn, env)),
+  _proc[#_proc + 1] = {
+    co = coroutine.create(setfenv(fn, getfenv())),
     name = name or "lua",
   }
   return true
@@ -251,40 +244,17 @@ task.launch(init, "init")
 os.queueEvent("multitask")
 while _proc[1] ~= nil do
     local ev = {os.pullEventRaw()}
-    if ev[1] == "processEvent" then
-      local pid = ev[2]
-      local evt = {}
-      for i=3,#ev do
-        table.insert(evt,ev[i])
-      end
-      ev = evt
-      local v = _proc[pid]
-      if v then
-        if not v.filter or ev[1] == "terminate" or v.filter == ev[1] then
-          local ok, rtn = coroutine.resume(v.co, unpack(ev))
-          if ok then
-            v.filter = rtn
-          else
-              printError(rtn)
-          end
-        end
-        if coroutine.status(v.co) == "dead" then
-          _killProc[pid] = true
+    for pid, v in pairs(_proc) do
+      if not v.filter or ev[1] == "terminate" or v.filter == ev[1] then
+        local ok, rtn = coroutine.resume(v.co, unpack(ev))
+        if ok then
+          v.filter = rtn
+        else
+            printError(rtn)
         end
       end
-    else
-      for pid, v in pairs(_proc) do
-        if not v.filter or ev[1] == "terminate" or v.filter == ev[1] then
-          local ok, rtn = coroutine.resume(v.co, unpack(ev))
-          if ok then
-            v.filter = rtn
-          else
-              printError(rtn)
-          end
-        end
-        if coroutine.status(v.co) == "dead" then
-          _killProc[pid] = true
-        end
+      if coroutine.status(v.co) == "dead" then
+        _killProc[pid] = true
       end
     end
     for pid in pairs(_killProc) do
