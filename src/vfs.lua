@@ -12,7 +12,8 @@ local function getPath(path)
     --Failsafe
     local fullPath = native.combine(path or "","")
 
-    if (native.getDrive(fullPath) or native.getDrive(native.getDir(fullPath))) ~= "hdd" then
+    local basedrive = (native.getDrive(fullPath) or native.getDrive(native.getDir(fullPath)))
+    if basedrive and basedrive ~= "hdd" then
       return fullPath
     end
 
