@@ -147,6 +147,7 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 	local lasttimerid = 1
 	local stop = false
 	local xOffset = _xMouseOffset or 0
+	local cleanStop = false
 	local yOffset = _yMouseOffset or 0
 	if _allowTerminate == true then
 		at = true
@@ -155,24 +156,24 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 	else
 		at = true
 	end
-	
+
 	function obj.changeViewport(newVP)
 		vp = newVP
 		obj.redraw()
 	end
-	
+
 	function obj.setXOffset(newXOffset)
 		xOffset = newXOffset
 	end
-	
+
 	function obj.setYOffset(newYOffset)
 		yOffset = newYOffset
 	end
-	
+
 	function obj.setBg(newBG)
 		bg = newBG
 	end
-	
+
 	function obj.deleteTimer(id)
 		os.cancelTimer(id)
 		for i=1,#timers do
@@ -181,16 +182,16 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 			end
 		end
 	end
-	
+
 	function obj.addTimer(time,callback)
 		local id = os.startTimer(time)
 		timers[#timers+1] = {id=lasttimerid + 1,callback=callback,evid=id, time=time}
-		lasttimerid = lasttimerid + 1		
+		lasttimerid = lasttimerid + 1
 		return lasttimerid
 	end
-	
-	
-	
+
+
+
 	function obj.deleteItem(targetid)
 		for i=1,#elements do
 			if elements[i].id == targetid then
@@ -259,7 +260,7 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		lastid = lastid + 1
 		return id
 	end
-	
+
 
 	function drawInput(id)
 		local toDraw = {}
@@ -291,7 +292,7 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 			end
 		end
 	end
-	
+
 	function obj.alterInput(id,_x,_y,_width,_text,_replace,_placeholder,_callback,_bg,_fg,_phfg)
 		for i=1,#elements do
 			if id == elements[i].id then
@@ -318,7 +319,7 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 			end
 		end
 	end
-	
+
 	function handleInput(id)
 		local svp = window.create(vp,elements[id].x,elements[id].y,elements[id].width,1,true)
 		svp.setBackgroundColor(elements[id].bg)
@@ -349,14 +350,14 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 			end
 		end
 	end
-	
+
 	function drawImage(index)
 		local oldterm = term.current()
 		term.redirect(vp)
 		paintutils.drawImage(elements[index].image,elements[index].x,elements[index].y)
 		term.redirect(oldterm)
 	end
-	
+
 	function obj.addFilledBox(x,y,x2,y2,color)
 		elements[#elements+1] = {element="FBX",x=x,y=y,x2=x2,y2=y2,color=color}
 		local id = lastid + 1
@@ -375,14 +376,14 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 			end
 		end
 	end
-	
+
 	function drawFilledBox(index)
 		local oldterm = term.current()
 		term.redirect(vp)
 		paintutils.drawFilledBox(elements[index].x,elements[index].y,elements[index].x2,elements[index].y2,elements[index].color)
 		term.redirect(oldterm)
-	end	
-	
+	end
+
 	function obj.addBox(x,y,x2,y2,color)
 		elements[#elements+1] = {element="BOX",x=x,y=y,x2=x2,y2=y2,color=color}
 		local id = lastid + 1
@@ -401,15 +402,15 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 			end
 		end
 	end
-	
+
 	function drawBox(index)
 		local oldterm = term.current()
 		term.redirect(vp)
 		paintutils.drawBox(elements[index].x,elements[index].y,elements[index].x2,elements[index].y2,elements[index].color)
 		term.redirect(oldterm)
 	end
-	
-	
+
+
 	function obj.addLine(x,y,x2,y2,color)
 		elements[#elements+1] = {element="LNE",x=x,y=y,x2=x2,y2=y2,color=color}
 		local id = lastid + 1
@@ -428,40 +429,81 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 			end
 		end
 	end
-	
+
 	function drawLine(index)
 		local oldterm = term.current()
 		term.redirect(vp)
 		paintutils.drawLine(elements[index].x,elements[index].y,elements[index].x2,elements[index].y2,elements[index].color)
 		term.redirect(oldterm)
 	end
-	
-	
+
+  function obj.setHidden(id,hid)
+    elements[i].hidden = true
+  end
+
+  function obj.addGroup()
+		elements[#elements+1] = {element="GROUP",hidden = false,objects = {}}
+		local id = lastid + 1
+		lastid = lastid + 1
+		return id
+	end
+
+  function obj.moveGroup(id,dx,dy)
+    local grp = elements[id]
+    if grp.element ~= "GROUP" then
+      error("Cannot move non-group objects")
+    end
+    for i,v in pairs(grp.objects) do
+      local obj = elements[v]
+      if obj.x then obj.x = obj.x + dx end
+      if obj.y  then obj.y = obj.y + dy end
+      if obj.x2 then obj.x = obj.x2 + dx end
+      if obj.y2  then obj.y = obj.y2 + dy end
+    end
+  end
+
+  function obj.setGroupHidden(id,hid)
+    local grp = elements[id]
+    for i,v in pairs(grp.objects) do
+      local obj = elements[v]
+      obj.hidden = hid
+    end
+  end
+
+  function obj.addToGroup(grpid,id)
+    local grp = elements[grpid]
+    grp.objects[#grp.objects+1] = id
+  end
+
+
+
 	function obj.redraw()
 		vp.setBackgroundColor(bg)
 		vp.clear()
 		for i=1,#elements do
-			if elements[i].element == "BTN" then
-				drawButton(i)
-			end
-			if elements[i].element == "LBL" then
-				drawLabel(i)
-			end
-			if elements[i].element == "INP" then
-				drawInput(i)
-			end
-			if elements[i].element == "IMG" then
-				drawImage(i)
-			end
-			if elements[i].element == "FBX" then
-				drawFilledBox(i)
-			end
-			if elements[i].element == "BOX" then
-				drawBox(i)
-			end
-			if elements[i].element == "LNE" then
-				drawLine(i)
-			end
+      if elements[i].hidden ~= true then
+  			if elements[i].element == "BTN" then
+  				drawButton(i)
+  			end
+  			if elements[i].element == "LBL" then
+  				drawLabel(i)
+  			end
+  			if elements[i].element == "INP" then
+  				drawInput(i)
+  			end
+  			if elements[i].element == "IMG" then
+  				drawImage(i)
+  			end
+  			if elements[i].element == "FBX" then
+  				drawFilledBox(i)
+  			end
+  			if elements[i].element == "BOX" then
+  				drawBox(i)
+  			end
+  			if elements[i].element == "LNE" then
+  				drawLine(i)
+  			end
+      end
 		end
 	end
 	function obj.alert(text, _title, _titlefg, _border, _middlebg, _middlefg, _buttonbg, _buttonfg)
@@ -511,9 +553,10 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		until ev == "mouse_click" or ev == "key"
 		obj.redraw()
 	end
-	
-	function obj.exit()
+
+	function obj.exit(_clean)
 		stop = true
+		cleanStop = _clean
 		os.queueEvent("_")
 	end
 	function handleMouse()
@@ -560,42 +603,51 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		obj.redraw()
 		end
 	end
-	
+
 	function stopSignalHandler()
 		while true do
 			local ev = {os.pullEventRaw()}
 			if ev[1] == "terminate" and at == true then break end
-			if ev[1] == "_" then break end
+			if ev[1] == "_" and stop then break end
 		end
 		vp.setBackgroundColor(colors.black)
 		vp.setTextColor(colors.white)
 		vp.setCursorPos(1,1)
 		vp.clear()
 	end
-	
+
 	function timerHandler()
 		while true do
 			local ev = {os.pullEventRaw("timer")}
 			for i=1,#timers do
-				if ev[2] == timers[i].evid then
-					timers[i].callback()
-					local a = os.startTimer(timers[i].time)
+				if timers[i] then
+				if ev[2] == timers[i].evid  then
 					local call = timers[i].callback
-					local evid = a
 					local time = timers[i].time
 					local id = timers[i].id
-					timers[i] = {callback = call, evid = evid, time = time, id = id}
+					timers[i].callback()
+					if timers[i] then
+						local evid = os.startTimer(time)
+						timers[i] = {callback = call, evid = evid, time = time, id = id}
+					end
 					obj.redraw()
 				end
+				else break end
 			end
 		end
 	end
-	
+
 	function obj.go()
-		parallel.waitForAny(stopSignalHandler,handleMouse,timerHandler)	
+		parallel.waitForAny(stopSignalHandler,handleMouse,timerHandler)
+		if cleanStop == true then
+		term.setBackgroundColor(colors.black)
+		term.setTextColor(colors.white)
+		term.clear()
+		term.setCursorPos(1,1)
+		end
 	end
-	
-	
-	
+
+
+
 	return obj
 end
