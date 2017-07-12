@@ -579,14 +579,14 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 			for i=1,#timers do
 				if timers[i] then
 				if ev[2] == timers[i].evid  then
-					
-					local a = os.startTimer(timers[i].time)
 					local call = timers[i].callback
-					local evid = a
 					local time = timers[i].time
 					local id = timers[i].id
 					timers[i].callback()
-					timers[i] = {callback = call, evid = evid, time = time, id = id}
+					if timers[i] then
+						local evid = os.startTimer(time)
+						timers[i] = {callback = call, evid = evid, time = time, id = id}
+					end
 					obj.redraw()
 				end
 				else break end
