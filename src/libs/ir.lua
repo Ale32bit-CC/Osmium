@@ -565,7 +565,7 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		while true do
 			local ev = {os.pullEventRaw()}
 			if ev[1] == "terminate" and at == true then break end
-			if ev[1] == "_" then break end
+			if ev[1] == "_" and stop then break end
 		end
 		vp.setBackgroundColor(colors.black)
 		vp.setTextColor(colors.white)
