@@ -553,7 +553,6 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		until ev == "mouse_click" or ev == "key"
 		obj.redraw()
 	end
-
 	function obj.exit(_clean)
 		stop = true
 		cleanStop = _clean
