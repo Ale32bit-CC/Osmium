@@ -577,7 +577,8 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		while true do
 			local ev = {os.pullEventRaw("timer")}
 			for i=1,#timers do
-				if ev[2] == timers[i].evid then
+				if timers[i] then
+				if ev[2] == timers[i].evid  then
 					timers[i].callback()
 					local a = os.startTimer(timers[i].time)
 					local call = timers[i].callback
@@ -586,6 +587,7 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 					local id = timers[i].id
 					timers[i] = {callback = call, evid = evid, time = time, id = id}
 					obj.redraw()
+				end
 				end
 			end
 		end
