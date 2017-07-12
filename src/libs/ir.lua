@@ -147,6 +147,7 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 	local lasttimerid = 1
 	local stop = false
 	local xOffset = _xMouseOffset or 0
+	local cleanStop = false
 	local yOffset = _yMouseOffset or 0
 	if _allowTerminate == true then
 		at = true
@@ -512,8 +513,9 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		obj.redraw()
 	end
 	
-	function obj.exit()
+	function obj.exit(_clean)
 		stop = true
+		cleanStop = _clean
 		os.queueEvent("_")
 	end
 	function handleMouse()
@@ -596,6 +598,12 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 	
 	function obj.go()
 		parallel.waitForAny(stopSignalHandler,handleMouse,timerHandler)	
+		if cleanStop == true then
+		term.setBackgroundColor(colors.black)
+		term.setTextColor(colors.white)
+		term.clear()
+		term.setCursorPos(1,1)
+		end
 	end
 	
 	
