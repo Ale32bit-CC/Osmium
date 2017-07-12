@@ -1,22 +1,29 @@
+local UserPath = ".UserData"
+
 local native = {}
 for k,v in pairs(_G.fs) do
     native[k] = v
 end
 
+local fs = {}
+
 local function getPath(path)
-    path = path or ""
-    
+
     --Failsafe
-    local fullPath = native.combine(path,"")
-    
-    if fullPath:find("^%.UserData") then
-        return path
-    end   
-    --Enf failsafe
-    
-    
-    fullPath = native.combine("/.UserData/",path or "")
-    if fullPath:find("^%.UserData") then
+    local fullPath = native.combine(path or "","")
+
+    if (native.getDrive(fullPath) or native.getDrive(native.getDir(fullPath))) ~= "hdd" then
+      return fullPath
+    end
+
+
+    if fullPath:sub(1,#UserPath) == UserPath then
+        return fullPath
+    end
+    --End failsafe
+
+    fullPath = native.combine(UserPath,fullPath)
+    if fullPath:sub(1,#UserPath) == UserPath then
         return fullPath
     else
         error("Path doesn't exist")
@@ -27,165 +34,95 @@ end
 
 
 --shell.setDir("/.UserData/")
-_G.fs.open = function(file,mode)
-    local pos = {string.find(file,"rom")}
-    if pos[2] ~= 3 and pos[2] ~= 4 then
-        return native.open(getPath(file),mode)
-    else
-        return native.open(file,mode)
+fs.open = function(file,mode)
+    return native.open(getPath(file),mode)
+end
+
+fs.list = function(path)
+    if native.combine(path,"") == "" then
+      local l1 = native.list(getPath(path))
+      local l2 = native.list(path)
+      for i,v in pairs(l2) do
+        if native.getDrive(v) ~= "hdd" then
+          if v ~= "rom" then
+            table.insert(l1,v)
+          end
+        end
+      end
+      return l1
     end
+    return native.list(getPath(path))
 end
 
-_G.fs.list = function(path)
-    local pos = {string.find(path,"rom")}
-    if pos[2] ~= 3 and pos[2] ~= 4 then
-        return native.list(getPath(path))
-    else
-        return native.list(path)
-    end
+fs.exists = function(path)
+    return native.exists(getPath(path))
 end
 
-_G.fs.exists = function(path)
-    local pos = {string.find(path,"rom")}
-    if pos[2] ~= 3 and pos[2] ~= 4 then
-        return native.exists(getPath(path))
-    else
-        return native.exists(path)
-    end
+fs.isDir = function(path)
+    return native.isDir(getPath(path))
 end
 
-_G.fs.isDir = function(path)
-    local pos = {string.find(path,"rom")}
-    if pos[2] ~= 3 and pos[2] ~= 4 then
-        return native.isDir(getPath(path))
-    else
-        return native.isDir(path)
-    end
+fs.isReadOnly = function(path)
+  return native.isReadOnly(getPath(path))
 end
 
-_G.fs.isReadOnly = function(path)
-    local pos = {string.find(path,"rom")}
-    if pos[2] ~= 3 and pos[2] ~= 4 then
-        return false
-    else
-        return true
-    end
+fs.getName = function(path)
+    return native.getName(getPath(path))
 end
 
-_G.fs.getName = function(path)
-    local pos = {string.find(path,"rom")}
-    if pos[2] ~= 3 and pos[2] ~= 4 then
-        return native.getName(getPath(path))
-    else
-        return native.getName(path)
-    end
+fs.getDrive = function(path) return native.getDrive(getPath(path)) end
+
+fs.getSize = function(path)
+    return native.getSize(getPath(path))
 end
 
-_G.fs.getDrive = function() return nil end
-
-_G.fs.getSize = function(path)
-    local pos = {string.find(path,"rom")}
-    if pos[2] ~= 3 and pos[2] ~= 4 then
-        return native.getSize(getPath(path))
-    else
-        return native.getSize(path)
-    end
+fs.getFreeSpace = function(path)
+    return native.getFreeSpace(getPath(path))
 end
 
-_G.fs.getFreeSpace = function(path)
-    local pos = {string.find(path,"rom")}
-    if pos[2] ~= 3 and pos[2] ~= 4 then
-        return native.getFreeSpace(getPath(path))
-    else
-        return native.getFreeSpace(path)
-    end
+fs.makeDir = function(path)
+    return native.makeDir(getPath(path))
 end
 
-_G.fs.makeDir = function(path)
-    local pos = {string.find(path,"rom")}
-    if pos[2] ~= 3 and pos[2] ~= 4 then
-        return native.makeDir(getPath(path))
-    else
-        return native.makeDir(path)
-    end
+fs.move = function(path,target)
+    return native.move(getPath(path), getPath(target))
 end
 
-_G.fs.move = function(path,target)
-    local pos = {string.find(path,"rom")}
-    if pos[2] ~= 3 and pos[2] ~= 4 then
-        return native.move(getPath(path), getPath(target))
-    else
-        return native.move(path, getPath(target))
-    end
+fs.copy = function(path,target)
+    return native.copy(getPath(path),getPath(target))
 end
 
-_G.fs.copy = function(path,target)
-    local pos = {string.find(path,"rom")}
-    if pos[2] ~= 3 and pos[2] ~= 4 then
-        return native.copy(getPath(path),getPath(target))
-    else
-        return native.copy(path, getPath(target))
-    end
+fs.delete = function(path)
+	    return native.delete(getPath(path))
 end
 
-_G.fs.delete = function(path)
-  local pos = {string.find(path,"rom")}
-  if pos[2] ~= 3 and pos[2] ~= 4 then
-		    return native.delete(getPath(path))
-  else 
-      return native.delete(path)
-  end
-end
---[[
-_G.fs.find = function(wildcard)
-	local pos = {string.find(wildcard,"rom")}
-	if pos[2] ~= 3 and pos[2] ~= 4 then
-		return native.find(getPath(wildcard))
-	else
-		return native.find(wildcard)
-	end
-end
-]]
+fs.find = function(wildcard)
 
-_G.fs.find = function(wildcard)
-    local pos = {string.find(wildcard,"rom")}
-    if pos[2] ~= 3 and pos[2] ~= 4 then
-    
     local data = native.find(getPath(wildcard))
     local data2 = {}
     for i,v in pairs(data) do
-        data2[i] = v:sub(string.len("./UserData"))
+        if v:sub(1,#UserPath) == UserPath then
+          data2[i] = v:sub(string.len("./UserData"))
+        else
+          data2[i] = v
+        end
     end
     return data2
-    
-    else
-    
-    return native.find(wildcard)
-    
-    end
-end
-    
-
-
-
-_G.fs.getDir = function(path)
-	local pos = {string.find(path,"rom")}
-	if pos[2] ~= 3 and pos[2] ~= 4 then
-		return native.getDir(getPath(path))
-	else
-		return native.getDir(path)
-	end
 end
 
-_G.fs.complete = function(sName, path, _third, _fourth)
-	local pos = {string.find(path,"rom")}
-	if pos[2] ~= 3 and pos[2] ~= 4 then
+
+
+
+fs.getDir = function(path)
+	 return native.getDir(getPath(path))
+end
+
+fs.complete = function(sName, path, _third, _fourth)
 		return native.complete(sName,getPath(path),_third,_fourth)
-	else
-		return native.complete(sName,path,_third,_fourth)
-	end
 end
 
-_G.fs.combine = function(first,second)
+fs.combine = function(first,second)
 		return native.combine(first,second)
 end
+
+_G.fs = fs
