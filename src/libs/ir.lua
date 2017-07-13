@@ -566,7 +566,7 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 			ev[3] = ev[3] + xOffset
 			ev[4] = ev[4] + yOffset
 			for i=1,#elements do
-				if elements[i].element == "BTN" and elements[i] ~= false then
+				if elements[i].element == "BTN" and elements[i].hidden ~= true then
 					if ev[1] == "mouse_click" then
 						--print("Mouse click")
 						if ev[4] == elements[i].y then
@@ -581,7 +581,7 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 						end
 					end
 				end
-				if elements[i].element == "INP" and elements[i] ~= false then
+				if elements[i].element == "INP" and elements[i].hidden ~= true then
 					if ev[1] == "mouse_click" then
 						--print("Mouse click")
 						if ev[4] == elements[i].y then
