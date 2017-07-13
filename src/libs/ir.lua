@@ -438,7 +438,7 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 	end
 
   function obj.setHidden(id,hid)
-    elements[i].hidden = true
+    elements[id].hidden = hid
   end
 
   function obj.addGroup()
