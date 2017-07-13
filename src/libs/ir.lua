@@ -157,7 +157,7 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		at = true
 	end
 
-  function getObjectWithId(id)
+  function getObjectWithId(targetid)
     for i=1,#elements do
 			if elements[i].id == targetid then
         return elements[i]
