@@ -453,7 +453,7 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
   function obj.addGroup()
 		local id = lastid + 1
 		lastid = lastid + 1
-    elements[#elements+1] = {element="GROUP",hidden = false,objects = {} id = id}
+    elements[#elements+1] = {element="GROUP",hidden = false,objects = {}, id = id}
 		return id
 	end
 
