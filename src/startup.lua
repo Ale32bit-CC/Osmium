@@ -1,1 +1,1 @@
-os.run({},"/.Osmium/init.lua")
+os.run({shell=shell},"/.Osmium/init.lua")
