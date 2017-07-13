@@ -96,8 +96,9 @@ end
 if dev then
     return
 end
-
-_G.debug.getupvalue = nil
+if _G.debug and _G.debug.getupvalue then
+  _G.debug.getupvalue = nil
+end
 _G.osmium = {}
 
 
