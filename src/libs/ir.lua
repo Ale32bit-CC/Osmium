@@ -573,8 +573,8 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		while stop == false do
 		local ev = {os.pullEventRaw("mouse_click")}
 		if ev[1] == "mouse_click" then
-			ev[3] = ev[3] + xOffset
-			ev[4] = ev[4] + yOffset
+			ev[3] = ev[3] - xOffset
+			ev[4] = ev[4] - yOffset
 			for i=1,#elements do
 				if elements[i].element == "BTN" and elements[i].hidden ~= true then
 					if ev[1] == "mouse_click" then
