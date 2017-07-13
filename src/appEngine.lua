@@ -175,6 +175,7 @@ function appEngine.launch(id)
     local ok, err = pcall(setfenv(nativeLoadfile("/.OsmiumApps/"..id.."/main.lua"), setmetatable(
         { --opk api
             opk = opkApi,
+	    shell = shell,
         },{__index = getfenv()}
     )))
     if not ok then
