@@ -157,6 +157,14 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		at = true
 	end
 
+  function getObjectWithId(id)
+    for i=1,#elements do
+			if elements[i].id == targetid then
+        return elements[i]
+      end
+    end
+  end
+
 	function obj.changeViewport(newVP)
 		vp = newVP
 		obj.redraw()
@@ -438,23 +446,24 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 	end
 
   function obj.setHidden(id,hid)
-    elements[id].hidden = hid
+    local obj = getObjectWithId(id)
+    obj.hidden = hid
   end
 
   function obj.addGroup()
-		elements[#elements+1] = {element="GROUP",hidden = false,objects = {}}
 		local id = lastid + 1
 		lastid = lastid + 1
+    elements[#elements+1] = {element="GROUP",hidden = false,objects = {} id = id}
 		return id
 	end
 
   function obj.moveGroup(id,dx,dy)
-    local grp = elements[id]
+    local grp = getObjectWithId(id)
     if grp.element ~= "GROUP" then
       error("Cannot move non-group objects")
     end
     for i,v in pairs(grp.objects) do
-      local obj = elements[v]
+      local obj = getObjectWithId(v)
       if obj.x then obj.x = obj.x + dx end
       if obj.y  then obj.y = obj.y + dy end
       if obj.x2 then obj.x = obj.x2 + dx end
@@ -463,15 +472,15 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
   end
 
   function obj.setGroupHidden(id,hid)
-    local grp = elements[id]
+    local grp = getObjectWithId(id)
     for i,v in pairs(grp.objects) do
-      local obj = elements[v]
+      local obj = getObjectWithId(v)
       obj.hidden = hid
     end
   end
 
   function obj.addToGroup(grpid,id)
-    local grp = elements[grpid]
+    local grp = getObjectWithId(grpid)
     grp.objects[#grp.objects+1] = id
   end
 
