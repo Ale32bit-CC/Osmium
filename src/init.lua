@@ -89,9 +89,6 @@ if dev then
     return
 end
 
-
-
-shell = nil
 _G.osmium = {}
 
 
@@ -143,6 +140,7 @@ end
 local function init() 
     local ok, err = pcall(setfenv(nativeLoadfile("/.Osmium/appEngine.lua"),setmetatable({
             nFS = nativeFS,
+            shell = shell,
         },{__index = getfenv()})))
     if not ok then
         panic(err)
