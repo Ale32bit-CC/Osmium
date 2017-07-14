@@ -199,7 +199,7 @@ function appEngine.uninstall(id)
         list = {}
     end
     list[id] = nil
-    local f = fs.open(configFile,"w")
+    local f = nativeFS.open(configFile,"w")
     f.write(textutils.serialise(list))
     f.close()
     nativeFS.delete("/.OsmiumApps/"..id)
