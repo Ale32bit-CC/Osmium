@@ -1,0 +1,122 @@
+{
+  files = {
+    [ "main.lua" ] = "local ir = osmium.require(\"ir.lua\")\
+local db = osmium.require(\"db.lua\")\
+local sha256 = osmium.require(\"sha256.lua\").sha256\
+\
+local w,h = term.getSize()\
+local ids = {}\
+local texts = {\
+    \"Login\",\
+    \"Welcome back!\",\
+    \"Login > \"\
+}\
+local setup = {\
+    \"Setup\",\
+    \"Welcome to Osmium!\",\
+    \"Continue > \",\
+}\
+\
+local pwid\
+local username\
+local mode\
+local pw\
+local rpw\
+\
+local gui = ir.create(term.native(),colors.white,false) --change this boolean\
+local obj = {}\
+local function del()\
+    gui.deleteTimer(obj.timer)\
+    gui.deleteItem(obj.label)\
+end\
+\
+if not db.get(\"safety\",\"mode\") then --setup\
+    local w,h = term.getSize()\
+    gui.addFilledBox(1,1,w,3,colors.blue)\
+    gui.addLabel(w-5,1,\"Osmium\",colors.blue,colors.lightBlue)\
+    gui.addLabel(math.ceil(w/2)-math.ceil(#setup[1]/2),2,setup[1],colors.blue,colors.white)\
+    gui.addLabel(math.ceil(w/2)-math.ceil(#setup[2]/2),math.ceil(h/2)-math.ceil((h/2)/2),setup[2],colors.white,colors.blue)\
+    gui.addInput(4, math.ceil(h/2)-3,w-6,nil,\"Username\",function(name) db.set(\"userdata\",\"name\",name or \"Guest\") end, colors.lightGray, colors.white,colors.gray)\
+    gui.addLabel(4,math.ceil(h/2)-1,\"Leave blank to disable\",colors.white,colors.lightGray)\
+    pw=gui.addInput(4, math.ceil(h/2),w-6,\"*\",\"Password\",nil,colors.lightGray,colors.white,colors.gray)\
+    rpw=gui.addInput(4,math.ceil(h/2)+3,w-6,\"*\",\"Repeat password\",nil,colors.lightGray,colors.white,colors.gray)\
+    \
+    gui.addButton(w-#setup[3]+1,h,setup[3],function() \
+        local pw = gui.getInput(pw)\
+        local rpw = gui.getInput(rpw)\
+        if pw == \"\" then\
+            db.set(\"safety\",\"mode\",\"none\")\
+            gui.exit(true)\
+        end\
+        \
+        if pw ~= rpw then\
+            obj.timer = gui.addTimer(3,del)\
+            obj.label = gui.addLabel(4,math.ceil(h/2)+4,\"Password do not match\",colors.white,colors.red)\
+            return\
+        end\
+        \
+        db.set(\"safety\",\"mode\",\"password\")\
+        db.set(\"safety\",\"password\",sha256(pw))\
+        gui.exit(true)\
+        \
+    end, colors.white,colors.gray)\
+    \
+    gui.go()\
+    return\
+end\
+\
+if db.get(\"safety\",\"mode\") == \"none\" then\
+    term.setBackgroundColor(colors.black)\
+    term.setTextColor(colors.white)\
+    term.clear()\
+    term.setCursorPos(1,1)\
+    return\
+end\
+\
+os.queueEvent(\"mouse_click\",1,4,math.ceil(h/2))\
+\
+local function delTimer()\
+    gui.deleteTimer(ids.timer)\
+    gui.deleteItem(ids.wrong)\
+end\
+local function login(pass)\
+    if not pass then\
+        pass = gui.getInput(pwid)\
+    end\
+    if not pass then\
+        return\
+    end\
+    if sha256(pass) == db.get(\"safety\",\"password\") then\
+        term.setBackgroundColor(colors.black)\
+        term.setTextColor(colors.white)\
+        term.clear()\
+        term.setCursorPos(1,1)\
+        gui.exit(true)\
+    else\
+        if pass ~= \"\" then\
+            ids.wrong = gui.addLabel(4,math.ceil(h/2)+1,\"Wrong password!\",colors.white,colors.red)\
+            ids.timer = gui.addTimer(3,function() delTimer() end)\
+        end\
+    end\
+end\
+\
+gui.addFilledBox(1,1,w,3,colors.blue)\
+gui.addLabel(w-5,1,\"Osmium\",colors.blue,colors.lightBlue)\
+gui.addLabel(math.ceil(w/2)-math.ceil(#texts[1]/2),2,texts[1],colors.blue,colors.white)\
+\
+gui.addLabel(math.ceil(w/2)-math.ceil(#texts[2]/2),math.ceil(h/2)-3,texts[2],colors.white,colors.blue)\
+pwid = gui.addInput(4,math.ceil(h/2),w-6,\"*\",\"Password\",login,colors.lightGray,colors.white,colors.gray)\
+gui.addButton(w-#texts[3]+1,h,texts[3],login,colors.white,colors.gray)\
+gui.go()",
+  },
+  config = {
+    id = "osmium.login",
+    author = "Ale32bit",
+    name = "Login",
+    version = 2,
+  },
+  opkData = {
+    version = 1,
+    builder = "OPK BUILDER",
+  },
+}
