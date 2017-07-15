@@ -19,9 +19,10 @@ local files = {
     
     ["src/startup.lua"] = "/.Osmium/startup.lua",
     ["src/startup.lua"] = "/startup",
+	["src/apps/osmium.login.opk"] = "/.UserData/.AppEngineScheduled/login",
 }
 
-local githubUser    = "Ale32bit"
+local githubUser    = "thekoksus"
 local githubRepo    = "Osmium"
 local githubBranch  = "master"
 
