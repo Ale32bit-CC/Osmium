@@ -241,12 +241,14 @@ function appEngine.getInfo(id)
     end
     return nil
 end
+
 if nativeFS.exists("/.UserData/.AppEngineScheduled") then
-	local files = nativeFS.list("/.UserData/.AppEngineScheduled")
-	for i=1,#files do
-		appEngine.install("/.UserData/.AppEngineScheduled/" .. files[i])
+	for k,v in ipairs(nativeFS.list("/.UserData/.AppEngineScheduled")) do
+		appEngine.install("/.UserData/.AppEngineScheduled/" .. v)
+		nativeFS.delete("/.UserData/.AppEngineScheduled/".. v)
 	end
 end
+
 dofile("/.Osmium/vfs.lua")
 
 dofile("/rom/programs/advanced/multishell.lua") --temp
