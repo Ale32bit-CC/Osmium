@@ -22,7 +22,7 @@ local files = {
 	["src/apps/osmium.login.opk"] = "/.UserData/.AppEngineScheduled/login",
 }
 
-local githubUser    = "thekoksus"
+local githubUser    = "Ale32bit"
 local githubRepo    = "Osmium"
 local githubBranch  = "master"
 
