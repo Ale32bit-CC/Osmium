@@ -85,7 +85,7 @@ function appEngine.install(path)
         return false, "not a file"
     end
     local oopk = fs.open(path,"r")
-    if not oopk then --i'm an idiot..
+    if not oopk then
         return false, "not opk"
     end
     local opk = textutils.unserialise(oopk.readAll())
@@ -171,16 +171,20 @@ function appEngine.launch(id)
         handle.write(file)
         handle.close()
     end
-    
+    local w,h = term.getSize()
+    local nati = term.current()
+    term.redirect(window.create(nati,1,1,w,h,true))
+    local curr = term.current()
     local ok, err = pcall(setfenv(nativeLoadfile("/.OsmiumApps/"..id.."/main.lua"), setmetatable(
         { --opk api
             opk = opkApi,
-	    shell = shell,
+	           shell = shell,
         },{__index = getfenv()}
     )))
     if not ok then
         printError(err)
     end
+    term.redirect(nati)
 end
 
 function appEngine.uninstall(id)
