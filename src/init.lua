@@ -213,8 +213,31 @@ end
   Proc multitask by MultMine
 ]]--
 
+local userInputs = {
+    "char",
+    "key",
+    "key_up",
+    "paste",
+    "terminate",
+    "mouse_click",
+    "mouse_up",
+    "mouse_scroll",
+    "mouse_draw",
+}
+
+local function checkEvent(ev)
+    local e = false
+    for k,v in ipairs(userInputs) do
+        if v == ev then
+            e = true
+        end
+    end
+    return e
+end
+
 local _proc = {}
 local _killProc = {}
+local sele
 _G.task = {}
 function task.signal(pid, sig)
   local p = _proc[pid]
@@ -247,13 +270,21 @@ function task.getInfo()
   return t
 end
 
+function task.switch(pid)
+    sele = pid
+end
+
 -- start
 task.launch(init, "init")
 os.queueEvent("multitask")
 while _proc[1] ~= nil do
     local ev = {os.pullEventRaw()}
     for pid, v in pairs(_proc) do
-      if not v.filter or ev[1] == "terminate" or v.filter == ev[1] then
+     local okev = false
+     if (pid == sele and checkEvent(ev[1])) or (pid ~= sele) then
+         okev = true
+     end
+      if not v.filter or v.filter == ev[1] and okev then
         local ok, rtn = coroutine.resume(v.co, unpack(ev))
         if ok then
           v.filter = rtn
