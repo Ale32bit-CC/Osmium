@@ -64,7 +64,7 @@ function launchApp(...)
     
     local run = coroutine.create(function() local err,txt = pcall(os.run,env,unpack(m_args)) if not err then term.native().write(txt) end end)
     local app = {co=run}
-    app.terminal = window.create(main_term,1,1,30,20,m_running)
+    app.terminal = window.create(main_term,1,1,51,19,m_running)
     local pid = (#apps+1)
     print(pid)
     apps[pid] = app
