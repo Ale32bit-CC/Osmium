@@ -12,6 +12,7 @@ local files = {
     ["src/init.lua"] = "/.Osmium/init.lua",
     ["src/vfs.lua"] = "/.Osmium/vfs.lua",
     ["src/appEngine.lua"] = "/.Osmium/appEngine.lua",
+    ["src/appTasker.lua"] = "/.Osmium/appTasker.lua",
     
     ["src/libs/ir.lua"] = "/.Osmium/libs/ir.lua",
 	["src/libs/sha256.lua"] = "/.Osmium/libs/sha256.lua",
