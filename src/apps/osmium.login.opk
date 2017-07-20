@@ -23,7 +23,7 @@ local mode\
 local pw\
 local rpw\
 \
-local gui = ir.create(term.native(),colors.white,false) --change this boolean\
+local gui = ir.create(term.current(),colors.white,false) --change this boolean\
 local obj = {}\
 local function del()\
     gui.deleteTimer(obj.timer)\
