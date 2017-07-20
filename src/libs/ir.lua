@@ -157,6 +157,8 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		at = true
 	end
 
+  local selectedInput = nil
+
   function getObjectWithId(targetid)
     for i=1,#elements do
 			if elements[i].id == targetid then
@@ -229,10 +231,11 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		end
 	end
 	function drawButton(id)
-		vp.setCursorPos(elements[id].x,elements[id].y)
-		vp.setBackgroundColor(elements[id].bg)
-		vp.setTextColor(elements[id].fg)
-		vp.write(elements[id].text)
+    local m_obj = getObjectWithId(id)
+		vp.setCursorPos(m_obj.x,m_obj.y)
+		vp.setBackgroundColor(m_obj.bg)
+		vp.setTextColor(m_obj.fg)
+		vp.write(m_obj.text)
 	end
 
 	function obj.addLabel(x,y,text, _BG, _FG)
@@ -243,10 +246,11 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 	end
 
 	function drawLabel(id)
-		vp.setCursorPos(elements[id].x,elements[id].y)
-		vp.setBackgroundColor(elements[id].bg)
-		vp.setTextColor(elements[id].fg)
-		vp.write(elements[id].text)
+    local m_obj = getObjectWithId(id)
+		vp.setCursorPos(m_obj.x,m_obj.y)
+		vp.setBackgroundColor(m_obj.bg)
+		vp.setTextColor(m_obj.fg)
+		vp.write(m_obj.text)
 	end
 
 	function obj.alterLabel(targetid,_newX,_newY,_newText,_newBG,_newFG)
@@ -263,21 +267,61 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 	end
 
 	function obj.addInput(x,y,width,_replace,_placeholder,_callback,_BG,_FG,_PHFG)
-		elements[#elements + 1] = {width = width, text = "", rep = _replace or false, id = lastid+1,element="INP", x = x, y = y, placeholder = _placeholder or "", callback = _callback or function() end, bg = _BG or colors.lightGray, fg = _FG or colors.black, placecol = _PHFG or colors.gray}
-		local id = lastid + 1
+    local id = lastid + 1
+		elements[#elements + 1] = {id=id,width = width, text = "", rep = _replace or false,element="INP", x = x, y = y, placeholder = _placeholder or "", callback = _callback or function() end, bg = _BG or colors.lightGray, fg = _FG or colors.black, placecol = _PHFG or colors.gray}
 		lastid = lastid + 1
 		return id
 	end
 
+  function drawInput(id)
+    local m_input = getObjectWithId(id)
+    local selected = selectedInput  == id
+    local startX = m_input.x
+    local startY = m_input.y
+    local use_placeholder = false
+    local text = m_input.text
+    local width = m_input.width
 
-	function drawInput(id)
+    --Get right colors
+    vp.setCursorPos(startX,startY)
+    vp.setBackgroundColor(m_input.bg)
+    if text == "" and not selected then
+      vp.setTextColor(m_input.placecol)
+      text = m_input.placeholder
+      use_placeholder = true
+    else
+      vp.setTextColor(m_input.fg)
+    end
+
+    --Fill area
+    vp.write(string.rep(" ",width))
+    vp.setCursorPos(startX,startY)
+    local onscreen = text:sub(-width)
+    if use_placeholder or not m_input.rep then
+        vp.write(onscreen)
+    else
+        vp.write(string.rep(m_input.rep,#onscreen))
+    end
+    m_input.cursx,m_input.cursy = vp.getCursorPos()
+  end
+
+  function getInputCursor(id)
+    local m_input = getObjectWithId(id)
+    vp.setTextColor(m_input.fg)
+    vp.setCursorBlink(true)
+    vp.setCursorPos(m_input.cursx,m_input.cursy)
+  end
+
+
+
+	function drawInputOld(id)
 		local toDraw = {}
 		vp.setCursorPos(elements[id].x,elements[id].y)
 		vp.setBackgroundColor(elements[id].bg)
 		for i=1,elements[id].width do
 			vp.write(" ")
 		end
-		if #elements[id].text  == 0 then
+		if #elements[id].text == 0 then
 			vp.setTextColor(elements[id].placecol)
 			for i=1,#elements[id].placeholder do
 				toDraw[i] = elements[id].placeholder:sub(i,i)
@@ -321,11 +365,10 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		end
 	end
 	function obj.getInput(id)
-		for i=1,#elements do
-			if id==elements[i].id then
-				return elements[i].text
-			end
-		end
+		local m_obj = getObjectWithId(id)
+    printError(m_obj.text)
+    os.sleep(2)
+				return m_obj.text
 	end
 
 	function handleInput(id)
@@ -359,10 +402,11 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		end
 	end
 
-	function drawImage(index)
+	function drawImage(id)
+    local m_obj = getObjectWithId(id)
 		local oldterm = term.current()
 		term.redirect(vp)
-		paintutils.drawImage(elements[index].image,elements[index].x,elements[index].y)
+		paintutils.drawImage(m_obj.image,m_obj.x,m_obj.y)
 		term.redirect(oldterm)
 	end
 
@@ -385,10 +429,11 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		end
 	end
 
-	function drawFilledBox(index)
+	function drawFilledBox(id)
+    local m_obj = getObjectWithId(id)
 		local oldterm = term.current()
 		term.redirect(vp)
-		paintutils.drawFilledBox(elements[index].x,elements[index].y,elements[index].x2,elements[index].y2,elements[index].color)
+		paintutils.drawFilledBox(m_obj.x,m_obj.y,m_obj.x2,m_obj.y2,m_obj.color)
 		term.redirect(oldterm)
 	end
 
@@ -411,10 +456,11 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		end
 	end
 
-	function drawBox(index)
+	function drawBox(id)
+    local m_obj = getObjectWithId(id)
 		local oldterm = term.current()
 		term.redirect(vp)
-		paintutils.drawBox(elements[index].x,elements[index].y,elements[index].x2,elements[index].y2,elements[index].color)
+		paintutils.drawBox(m_obj.x,m_obj.y,m_obj.x2,elements[index].y2,m_obj.color)
 		term.redirect(oldterm)
 	end
 
@@ -438,10 +484,11 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		end
 	end
 
-	function drawLine(index)
+	function drawLine(id)
+    local m_obj = getObjectWithId(id)
 		local oldterm = term.current()
 		term.redirect(vp)
-		paintutils.drawLine(elements[index].x,elements[index].y,elements[index].x2,elements[index].y2,elements[index].color)
+		paintutils.drawLine(m_obj.x,m_obj.y,m_obj.x2,m_obj.y2,m_obj.color)
 		term.redirect(oldterm)
 	end
 
@@ -486,34 +533,38 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 
 
 
+
 	function obj.redraw()
+  vp.setCursorBlink(false)
 		vp.setBackgroundColor(bg)
 		vp.clear()
 		for i=1,#elements do
+      local id = elements[i].id
       if elements[i].hidden ~= true then
   			if elements[i].element == "BTN" then
-  				drawButton(i)
+  				drawButton(id)
   			end
   			if elements[i].element == "LBL" then
-  				drawLabel(i)
+  				drawLabel(id)
   			end
   			if elements[i].element == "INP" then
-  				drawInput(i)
+  				drawInput(id)
   			end
   			if elements[i].element == "IMG" then
-  				drawImage(i)
+  				drawImage(id)
   			end
   			if elements[i].element == "FBX" then
-  				drawFilledBox(i)
+  				drawFilledBox(id)
   			end
   			if elements[i].element == "BOX" then
-  				drawBox(i)
+  				drawBox(id)
   			end
   			if elements[i].element == "LNE" then
-  				drawLine(i)
+  				drawLine(id)
   			end
       end
 		end
+    if selectedInput then getInputCursor(selectedInput) end
 	end
 	function obj.alert(text, _title, _titlefg, _border, _middlebg, _middlefg, _buttonbg, _buttonfg)
 		local xx, yy = vp.getSize()
@@ -567,12 +618,17 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		cleanStop = _clean
 		os.queueEvent("_")
 	end
+
+
+
 	function handleMouse()
 		os.sleep(0.05)
 		obj.redraw()
 		while stop == false do
 		local ev = {os.pullEventRaw("mouse_click")}
 		if ev[1] == "mouse_click" then
+      local oldSelected = selectedInput
+      selectedInput = nil
 			ev[3] = ev[3] - xOffset
 			ev[4] = ev[4] - yOffset
 			for i=1,#elements do
@@ -600,13 +656,19 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 							if ev[3] >= elements[i].x and ev[3] <= elements[i].width then
 								--print("DOING STUFF")
 								--sleep(2)
-								handleInput(i)
+                selectedInput = elements[i].id
+								--OLD, uses gread
+                --handleInput(i)
 								break
 							end
 						end
 					end
 				end
 			end
+   if oldSelected and oldSelected ~= selectedInput then
+       local inp = getObjectWithId(oldSelected)
+       if inp.callback then inp.callback(inp.text) end
+   end
 		end
 		--sleep(1)
 		obj.redraw()
@@ -646,8 +708,32 @@ function create(viewport, _BG, _allowTerminate, _xMouseOffset, _yMouseOffset)
 		end
 	end
 
+  function keyHandler()
+    while true do
+      local evt = {os.pullEventRaw()}
+      if selectedInput then
+        if evt[1] == "char" then
+          local m_inp = getObjectWithId(selectedInput)
+          m_inp.text = m_inp.text..evt[2]
+          obj.redraw()
+        elseif evt[1] == "key" then
+          if evt[2] == keys.backspace then
+            local m_inp = getObjectWithId(selectedInput)
+            m_inp.text = m_inp.text:sub(1,-2)
+            obj.redraw()
+          elseif evt[2] == keys.enter then
+              local inp = getObjectWithId(selectedInput)
+              if inp.callback then inp.callback(inp.text) end
+              selectedInput = nil
+              obj.redraw()
+          end
+        end
+      end
+    end
+  end
+
 	function obj.go()
-		parallel.waitForAny(stopSignalHandler,handleMouse,timerHandler)
+		parallel.waitForAny(stopSignalHandler,handleMouse,timerHandler,keyHandler)
 		if cleanStop == true then
 		term.setBackgroundColor(colors.black)
 		term.setTextColor(colors.white)
