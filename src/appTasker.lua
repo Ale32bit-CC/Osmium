@@ -1,4 +1,9 @@
 local appTasker = {}
+
+local appWindow = osmium.require("appWindow.lua")
+
+
+
 local os_pullEventRaw = os.pullEventRaw
 --local os_shutdown = os.shutdown
 --local os_reboot = os.reboot
@@ -45,7 +50,7 @@ function reOrder()
     positions = pos2
 end
 
-function setMainApp(pid)
+local function setMainApp(pid)
     for i=1,#positions do
         if positions[i] == pid then positions[i] = true end
     end
@@ -56,7 +61,7 @@ appTasker.setMain = setMainApp
 
 
 
-function launchApp(...)
+local function launchApp(...)
     local m_args = {...}
     local env = setmetatable({},{__index = getfenv()})
     env._ENV = env
@@ -64,7 +69,8 @@ function launchApp(...)
     
     local run = coroutine.create(function() local err,txt = pcall(os.run,env,unpack(m_args)) if not err then term.native().write(txt) end end)
     local app = {co=run}
-    app.terminal = window.create(main_term,1,1,51,19,m_running)
+    app.name = fs.getName(m_args[1])
+    app.terminal = appWindow.create(app,main_term,1,1,30,20,m_running)
     local pid = (#apps+1)
     print(pid)
     apps[pid] = app
@@ -75,12 +81,27 @@ function launchApp(...)
     return pid
 end
 
+local function launchFunction(func,name)
+    local pid = #apps+1
+    local app = {}
+    app.name = name or "[nameless]"
+    app.co = coroutine.create(func)
+    app.terminal = appWindow.create(app,main_term,1,1,30,20,m_running)
+    apps[pid] = app
+    reOrder()
+    positions[1] = pid
+    reOrder()
+    return pid
+end
+
+
+appTasker.launchFunction = launchFunction
 appTasker.launch = launchApp
 
 
 function repositionApp(pid,x,y)
     local app = apps[pid]
-    app.terminal.reposition(x,y,app.terminal.getSize())
+    app.terminal.reposition(x,y,app.terminal.getFullSize())
 end
 
 appTasker.reposition = repositionApp
@@ -105,6 +126,7 @@ function redraw()
     term.clear()
     for i=#positions,2,-1  do
         local app = apps[positions[i]]
+        
         app.terminal.redraw()
     end
 end
@@ -119,20 +141,27 @@ local dragx = 0
 function updateTop(evt)
     local x = evt[3]
     local y = evt[4]
+    local oldPid = positions[2]
     for i=2,#positions do
         local pid = positions[i]
         local app = apps[pid]
         local wx,wy = app.terminal.getPosition()
         local n_x,n_y = (x-wx+1),(y-wy+1)
-        local ww,wh = app.terminal.getSize()
-        if n_x >= 1 and n_x <= ww and n_y >= 1 and n_y <= wh then
+        local ww,wh = app.terminal.getShownSize()
+        if n_x >= 1 and n_x <= ww and n_y >= 0 and n_y <= wh then
             if i~=2 then
                 setMainApp(pid)
-                resumeApp(2,{"lost_focus"})
+                resumeApp(oldPid,{"lost_focus"})
                 resumeApp(pid,{"gained_focus"})
             end
-            if n_y == 1 then isDragging = true; dragx = n_x end
-            return i==2
+            if n_y == 0 then
+              if n_x == (ww-1) then
+                  app.terminal.setMinimized(not app.terminal.getMinimized())
+              else
+                  isDragging = true; dragx = n_x
+              end
+            end
+            return (i==2 and n_y ~= 0)
         end
     end
     return true
@@ -149,8 +178,6 @@ mouse_up = true,
 mouse_click = true,
 mouse_drag = true,
 
-
-
 }
 
 
@@ -158,11 +185,11 @@ mouse_drag = true,
 function doEvents()
     m_running = true
     local oldColor = term.getPaletteColor(colors.magenta)
-    term.setPaletteColor(colors.magenta,0xaaaaaa)
+    term.native().setPaletteColor(colors.magenta,0xaaaaaa)
     for i,v in pairs(apps) do
         v.terminal.setVisible(true)
     end
-    
+    os.queueEvent("start_apptasker")
     
     while #positions > 1 do
         redraw()
@@ -170,6 +197,10 @@ function doEvents()
         reOrder()
         if evt[1] == "mouse_click" then
             if updateTop(evt) then
+                local app = apps[positions[2]]
+                local wx,wy = app.terminal.getPosition()
+                evt[3] = evt[3] - wx + 1
+                evt[4] = evt[4] - wy + 1
                 resumeApp(positions[2],evt)
             end
         elseif isDragging == true then
@@ -183,6 +214,13 @@ function doEvents()
                 resumeApp(positions[2],evt)
             end
         elseif isUserEvent[evt[1]] then
+            if evt[1]:find("mouse") then
+                local app = apps[positions[2]]
+                local wx,wy = app.terminal.getPosition()
+                evt[3] = evt[3] - wx + 1
+                evt[4] = evt[4] - wy + 1
+            end
+            
             resumeApp(positions[2],evt)
         else
             for i=2,#positions do
