@@ -172,15 +172,24 @@ function appEngine.launch(id)
         handle.close()
     end
     
-    local ok, err = pcall(setfenv(nativeLoadfile("/.OsmiumApps/"..id.."/main.lua"), setmetatable(
-        { --opk api
+    local func = function() local ok, err = pcall(
+        setfenv(nativeLoadfile("/.OsmiumApps/"..id.."/main.lua"), setmetatable(
+            { --opk api
             opk = opkApi,
-	    shell = shell,
-        },{__index = getfenv()}
-    )))
-    if not ok then
-        printError(err)
+	            shell = shell,
+            },{__index = getfenv()}
+        )))
+       if not ok then
+           printError(err)
+           read()
+        end 
     end
+    
+    appTasker.launchFunction(func,config.name)
+    
+    --if not ok then
+    --    printError(err)
+    --end
 end
 
 function appEngine.uninstall(id)
@@ -249,6 +258,12 @@ if nativeFS.exists("/.UserData/.AppEngineScheduled") then
 	end
 end
 
+local appTasker = dofile("/.Osmium/appTasker.lua")
+
 dofile("/.Osmium/vfs.lua")
 
-dofile("/rom/programs/advanced/multishell.lua") --temp
+appTasker.launch("/rom/programs/advanced/multishell.lua")
+appTasker.run()
+
+
+--dofile("/rom/programs/advanced/multishell.lua") --temp
