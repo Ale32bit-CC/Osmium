@@ -1,0 +1,215 @@
+{
+  files = {
+    [ "main.lua" ] = "local defaultIcon = { { 16, 32768, 32768, 32768, 32768, }, { 32768, 16, 32768, 32768, 32768, }, { 16, 32768, 32768, 16, 16, }, { 32768, 32768, 32768, 32768, 32768, }, }\
+local w, h = term.getSize()\
+local objectsDesktop = {}\
+\
+for k,v in pairs(appEngine.list()) do\
+\009table.insert(objectsDesktop,{v,k})\
+end\
+\
+local sidebar = {\
+\009{\"Shell\",function() appTasker.launch(\"/rom/programs/shell\") end},\
+\009{\"\"},\
+\009{\"Lock\",function() appEngine.launch(\"osmium.login\") end},\
+\009{\"Reboot\",function() os.reboot() end},\
+\009{\"Shutdown\",function() os.shutdown() end},\
+\009{\"\"},\
+\009{\"Settings\",function() end},\
+}\
+\
+local function search(input)\
+\
+end\
+\
+local quantity = #objectsDesktop\
+local needRedraw = true\
+\
+local objCoords = {}\
+\
+local function getXY(iconNumber)\
+\009local x, y = 1,2\
+\009local maxX, maxY = 7, 3\
+\009local maxIcons = maxX*maxY\
+\009k = iconNumber\
+\009if k >= 13 then\
+\009\009y = 14\
+\009\009iconNumber = iconNumber - 12\
+\009elseif k >= 7 then\
+\009\009y = 8\
+\009\009iconNumber = iconNumber - 6\
+\009elseif k >= 1 then\
+\009\009iconNumber = iconNumber\
+\009\009y = 2\
+\009end\
+\009x = iconNumber * 8\
+\009x = x - 6\
+\009endx, endy = x+4,y+3\
+\009return x,y,endx,endy\
+end\
+\
+local function getProgram(x,y)\
+\009for k,v in pairs(objCoords) do\
+\009\009local px, py, pex, pey = v[1],v[2],v[3],v[4]\
+\009\009if x >= px and y >= py and x <= pex and y <= pey then\
+\009\009\009return objectsDesktop[k][1], objectsDesktop[k][2]\
+\009\009end\
+\009end\
+end\
+\
+local function redraw()\
+\009local name\
+\009term.setBackgroundColour(colors.white)\
+\009term.setTextColor(colors.gray)\
+\009term.clear()\
+\009term.setCursorPos(1,1)\
+\009local i = 1\
+\009for k, v in pairs(objectsDesktop) do\
+\009\009local x, y,endx,endy = getXY(k)\
+\009\009objCoords[k] = {x,y,endx,endy}\
+\009\009local icon = appEngine.getIcon(v[2]) or defaultIcon\
+\009\009paintutils.drawImage(icon,x,y)\
+\009\009if #v[1] > 7 then\
+\009\009\009term.setCursorPos(endx-5,endy+1)\
+\009\009\009name = string.sub(objectsDesktop[k][1],1,6)..\".\"\
+\009\009elseif #v[1] > 5 then\
+\009\009\009name = objectsDesktop[k][1]\
+\009\009\009term.setCursorPos(endx-5,endy+1)\
+\009\009else\
+\009\009\009name = objectsDesktop[k][1]\
+\009\009\009term.setCursorPos(endx-4,endy+1)\
+\009\009end\
+\009\009term.setBackgroundColour(colors.white)\
+\009\009write(name)\
+\009\009i = i + 1\
+\009end\
+\009paintutils.drawLine(w,1,w,h,colors.blue)\
+\009term.setCursorPos(w,h/2)\
+\009term.setTextColor(colors.white)\
+\009term.write(\"<\")\
+end\
+while true do\
+\009if quantity ~= #objectsDesktop or needRedraw then\
+\009\009redraw()\
+\009\009quantity = #objectsDesktop\
+\009\009needRedraw = false\
+\009end\
+\009local ev = {os.pullEventRaw()}\
+\009if ev[1] == \"mouse_click\" then\
+\009\009local mB = ev[2]\
+\009\009local mx, my = ev[3], ev[4]\
+\
+\009\009if mB == 1 then\
+\009\009\009if ev[3] == w then\
+\009\009\009\009local title = \"Osmium\"\
+\009\009\009\009local maxw = #title\
+\009\009\009\009for k,v in pairs(sidebar) do\
+\009\009\009\009\009if #v[1] > maxw then\
+\009\009\009\009\009\009maxw = #v[1]\
+\009\009\009\009\009end\
+\009\009\009\009end\
+\009\009\009\009paintutils.drawFilledBox(w-maxw-3,1,w,h,colors.cyan)\
+\009\009\009\009paintutils.drawLine(w-maxw-4,1,w-maxw-4,h,colors.blue)\
+\009\009\009\009term.setTextColor(colors.white)\
+\009\009\009\009term.setBackgroundColor(colors.blue)\
+\009\009\009\009term.setCursorPos(w-maxw-4,h/2)\
+\009\009\009\009term.write(\">\")\
+\009\009\009\009term.setBackgroundColor(colors.cyan)\
+\009\009\009\009term.setCursorPos(w-maxw,2)\
+\009\009\009\009term.setTextColor(colors.white)\
+\009\009\009\009\
+\009\009\009\009term.write(title)\
+\009\009\009\009term.setTextColor(colors.white)\
+\009\009\009\009local y = 5\
+\009\009\009\009for k,v in pairs(sidebar) do\
+\009\009\009\009\009term.setCursorPos(w-maxw-1,y)\
+\009\009\009\009\009term.write(v[1])\
+\009\009\009\009\009y=y+1\
+\009\009\009\009end\
+\009\009\009\009\
+\009\009\009\009-- paintutils.drawLine(w-maxw-2,h-1,w-1,h-1,colors.white)\
+\009\009\009\009-- term.setTextColor(colors.lightGray)\
+\009\009\009\009-- term.setCursorPos(w-maxw-2,h-1)\
+\009\009\009\009-- term.write(\"Search...\")\
+\009\009\009\009\
+\009\009\009\009while true do\
+\009\009\009\009\009local ev = {os.pullEventRaw()}\
+\009\009\009\009\009if ev[1] == \"mouse_click\" then\
+\009\009\009\009\009\009if ev[3] <= w-maxw-4 then\
+\009\009\009\009\009\009\009break\
+\009\009\009\009\009\009elseif sidebar[ev[4]-4] and type(sidebar[ev[4]-4][2]) == \"function\" then\
+\009\009\009\009\009\009\009sidebar[ev[4]-4][2]()\
+\009\009\009\009\009\009\009break\
+\009\009\009\009\009\009elseif ev[4] == h-1 and (ev[3] >= w-maxw-2 and ev[3] <= w-1) then\
+\009\009\009\009\009\009\009-- local len = (w-1)-(w-maxw-2)\
+\009\009\009\009\009\009\009-- local current = term.current()\
+\009\009\009\009\009\009\009-- local searchBar = window.create(current,w-maxw-2,h-1,len,1,true)\
+\009\009\009\009\009\009\009-- term.redirect(searchBar)\
+\009\009\009\009\009\009\009-- term.setBackgroundColor(colors.white)\
+\009\009\009\009\009\009\009-- term.clear()\
+\009\009\009\009\009\009\009-- term.setCursorPos(1,1)\
+\009\009\009\009\009\009\009-- term.setTextColor(colors.gray)\
+\009\009\009\009\009\009\009-- local inp = read()\
+\009\009\009\009\009\009\009-- term.redirect(current)\
+\009\009\009\009\009\009\009-- if inp ~= \"\" then\
+\009\009\009\009\009\009\009\009-- if search then\
+\009\009\009\009\009\009\009\009\009-- search(inp)\
+\009\009\009\009\009\009\009\009-- end\
+\009\009\009\009\009\009\009-- end\
+\009\009\009\009\009\009end\
+\009\009\009\009\009end\
+\009\009\009\009end\
+\009\009\009\009needRedraw = true\
+\009\009\009else\
+\009\009\009\009local appName, appID = getProgram(mx,my)\
+\009\009\009\009if appName then\
+\009\009\009\009\009if appEngine.exists(appID) then\
+\009\009\009\009\009\009appEngine.launch(appID)\
+\009\009\009\009\009end\
+\009\009\009\009end\
+\009\009\009end\
+\009\009end\
+\009end\
+end",
+  },
+  icon = {
+    {
+      128,
+      2,
+      8192,
+      1,
+      2048,
+    },
+    {
+      16384,
+      4,
+      64,
+      1,
+      2048,
+    },
+    {
+      1,
+      1,
+      1,
+      1,
+      2048,
+    },
+    {
+      1,
+      1,
+      1,
+      1,
+      2048,
+    },
+  },
+  config = {
+    version = 1,
+    author = "Ale32bit",
+    name = "Desktop",
+    id = "osmium.desktop",
+  },
+  opkData = {
+    builder = "OPK BUILDER",
+    version = 1,
+  },
+}
