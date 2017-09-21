@@ -29,13 +29,16 @@ if not nativeFS.exists("/.UserData/rom/readme") then
 end
 
 if not nativeFS.exists("/.OsmiumApps") then
-	nativeFS.makeDir("/.OsmiumApps")
+	nativeFS.makeDir("/.OsmiumApps/apps")
 end
 
 _G.appEngine = {}
+local runningOpk = {}
 
 local opkSystem = { -- Put OPK ids that can't be altered
-
+	["osmium.restore"] = true,
+	["osmium.login"] = true,
+	["osmium.desktop"] = true,
 }
 
 local configFile = "/.OsmiumApps/config"
@@ -85,7 +88,7 @@ function appEngine.install(path)
         return false, "not a file"
     end
     local oopk = fs.open(path,"r")
-    if not oopk then --i'm an idiot..
+    if not oopk then
         return false, "not opk"
     end
     local opk = textutils.unserialise(oopk.readAll())
@@ -94,6 +97,7 @@ function appEngine.install(path)
     local config = opk.config
     local files = opk.files
     local dat = opk.opkData
+	local icon = opk.icon
     
     if not config.id then
         return false, "not opk, missing id"
@@ -112,14 +116,29 @@ function appEngine.install(path)
     
     -- install files
     
-    nativeFS.makeDir("/.OsmiumApps/"..config.id)
+    nativeFS.makeDir("/.OsmiumApps/apps/"..config.id)
     for k, v in pairs(files) do
-        local f = nativeFS.open("/.OsmiumApps/"..config.id.."/"..k,"w")
+        local f = nativeFS.open("/.OsmiumApps/apps/"..config.id.."/"..k,"w")
         if f then
             f.write(v)
             f.close()
         end
     end
+	local finalIcon = {}
+	if icon and type(icon) == "table" then
+		for y = 1,4 do
+			finalIcon[y] = {}
+			for x = 1,5 do
+				if icon[y] and icon[y][x] then
+					finalIcon[y][x] = icon[y][x]
+				end
+			end
+		end
+		local f = nativeFS.open("/.OsmiumApps/icons/"..config.id,"w")
+		f.write(textutils.serialise(finalIcon))
+		f.close()
+	end
+	
     return true, config.id
 end
 
@@ -140,14 +159,14 @@ function appEngine.launch(id)
         
         local fullPath = nativeFS.combine(path,"")
         
-        if fullPath:find("^%.OsmiumApps/" .. id) then
+        if fullPath:find("^%.OsmiumApps/apps/" .. id) then
             return path
         end
         
         
-        fullPath = nativeFS.combine("/.OsmiumApps/" .. id .. "/",path or "")
+        fullPath = nativeFS.combine("/.OsmiumApps/apps/" .. id .. "/",path or "")
         
-        if fullPath:find("^%.OsmiumApps/" .. id) then
+        if fullPath:find("^%.OsmiumApps/apps/" .. id) then
             return fullPath
         else
             error("Path does not exist")
@@ -171,24 +190,27 @@ function appEngine.launch(id)
         handle.write(file)
         handle.close()
     end
-    
+    runningOpk[id] = true
     local func = function() local ok, err = pcall(
-        setfenv(nativeLoadfile("/.OsmiumApps/"..id.."/main.lua"), setmetatable(
+        setfenv(nativeLoadfile("/.OsmiumApps/apps/"..id.."/main.lua"), setmetatable(
             { --opk api
             opk = opkApi,
 	            shell = shell,
             },{__index = getfenv()}
         )))
+		runningOpk[id] = nil
        if not ok then
            printError(err)
            read()
         end 
     end
     
-    appTasker.launchFunction(func,config.name)
+	--task.launch(func,config.name)
+	
+    appTasker.launchFunction(func,config.name,config.id)
     
     --if not ok then
-    --    printError(err)
+        --printError(err)
     --end
 end
 
@@ -211,7 +233,8 @@ function appEngine.uninstall(id)
     local f = nativeFS.open(configFile,"w")
     f.write(textutils.serialise(list))
     f.close()
-    nativeFS.delete("/.OsmiumApps/"..id)
+    nativeFS.delete("/.OsmiumApps/apps/"..id)
+	nativeFS.delete("/.OsmiumApps/icons/"..id)
     return true
 end
 
@@ -222,7 +245,7 @@ function appEngine.list()
         f.close()
         local opk = {}
         for k,v in pairs(opks) do
-            table.insert(opk,k)
+            opk[k] = v.name
         end
         return opk
     else
@@ -251,6 +274,23 @@ function appEngine.getInfo(id)
     return nil
 end
 
+function appEngine.isRunning(id)
+	return runningOpk[id] or false
+end
+
+function appEngine.getIcon(id)
+	if not appEngine.exists(id) then
+		return nil
+	end
+	local f = nativeFS.open("/.OsmiumApps/icons/"..id,"r")
+	if f then
+		local icon = textutils.unserialise(f.readAll())
+		f.close()
+		return icon
+	end
+	return nil
+end
+
 if nativeFS.exists("/.UserData/.AppEngineScheduled") then
 	for k,v in ipairs(nativeFS.list("/.UserData/.AppEngineScheduled")) do
 		appEngine.install("/.UserData/.AppEngineScheduled/" .. v)
@@ -262,8 +302,6 @@ local appTasker = dofile("/.Osmium/appTasker.lua")
 
 dofile("/.Osmium/vfs.lua")
 
-appTasker.launch("/rom/programs/advanced/multishell.lua")
+appEngine.launch("osmium.restore")
+
 appTasker.run()
-
-
---dofile("/rom/programs/advanced/multishell.lua") --temp

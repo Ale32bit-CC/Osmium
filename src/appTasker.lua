@@ -29,12 +29,15 @@ end
 
 local main_term = term.current()
 
+local w, h = term.getSize()
+
 local m_running = false
 
 --term.setPaletteColor(colors.magenta,0xaaaaaa)
 
 local apps = {}
 local positions = {}
+local appIDs = {}
 
 function reOrder()
     local pos2 = {}
@@ -59,6 +62,17 @@ local function setMainApp(pid)
 end
 appTasker.setMain = setMainApp
 
+local function switch(appid)
+	if appIDs[appid] then
+		for i=1,#positions do
+			if positions[i] == pid then positions[i] = true end
+		end
+		positions[1] = appIDs[appid]
+		reOrder()
+	end
+end
+appTasker.switch = switch
+
 
 
 local function launchApp(...)
@@ -70,7 +84,7 @@ local function launchApp(...)
     local run = coroutine.create(function() local err,txt = pcall(os.run,env,unpack(m_args)) if not err then term.native().write(txt) end end)
     local app = {co=run}
     app.name = fs.getName(m_args[1])
-    app.terminal = appWindow.create(app,main_term,1,1,30,20,m_running)
+    app.terminal = appWindow.create(app,main_term,1,1,w,h,m_running)
     local pid = (#apps+1)
     print(pid)
     apps[pid] = app
@@ -81,12 +95,22 @@ local function launchApp(...)
     return pid
 end
 
-local function launchFunction(func,name)
+local function launchFunction(func,name,appid)
+	if appid then
+		if appIDs[appid] then
+			switch(appIDs[appid])
+			return
+		end
+	end
     local pid = #apps+1
     local app = {}
     app.name = name or "[nameless]"
     app.co = coroutine.create(func)
-    app.terminal = appWindow.create(app,main_term,1,1,30,20,m_running)
+    app.terminal = appWindow.create(app,main_term,1,1,w,h,m_running)
+	if appid then
+		app.aID = appid
+		appIDs[appid] = app.co
+	end
     apps[pid] = app
     reOrder()
     positions[1] = pid
@@ -98,7 +122,7 @@ end
 appTasker.launchFunction = launchFunction
 appTasker.launch = launchApp
 
-
+ --removed feature
 function repositionApp(pid,x,y)
     local app = apps[pid]
     app.terminal.reposition(x,y,app.terminal.getFullSize())
@@ -122,7 +146,7 @@ end
 
 function redraw()
     reOrder()
-    term.setBackgroundColor(colors.magenta)
+    term.setBackgroundColor(colors.black)
     term.clear()
     for i=#positions,2,-1  do
         local app = apps[positions[i]]
@@ -184,8 +208,11 @@ mouse_drag = true,
 
 function doEvents()
     m_running = true
-    local oldColor = term.getPaletteColor(colors.magenta)
-    term.native().setPaletteColor(colors.magenta,0xaaaaaa)
+	local oldColor
+	if term.setPaletteColor then
+		oldColor = term.getPaletteColor(colors.magenta)
+		term.native().setPaletteColor(colors.magenta,0xaaaaaa)
+	end
     for i,v in pairs(apps) do
         v.terminal.setVisible(true)
     end
@@ -236,7 +263,9 @@ function doEvents()
             end
         end
     end
-    term.setPaletteColor(colors.magenta,oldColor)
+	if term.setPaletteColor then
+		term.setPaletteColor(colors.magenta,oldColor)
+	end
     term.setBackgroundColor(colors.black)
     term.clear()
     term.setCursorPos(1,1)
