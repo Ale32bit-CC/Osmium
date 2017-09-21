@@ -48,6 +48,9 @@ out["opkData"] = {
 	version = 1,
 	builder = "OPK BUILDER",
 }
+if fs.exists(input.."/icon.nfp") then
+	out["icon"] = paintutils.loadImage(input.."/icon.nfp") or nil
+end
 
 local f = fs.open(output,"w")
 f.write(textutils.serialise(out))
