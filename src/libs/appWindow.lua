@@ -35,8 +35,8 @@ function create( m_app, parent, nX, nY, nWidth, nHeight, bStartVisible )
         error( "term is not a recommended window parent, try term.current() instead", 2 )
     end
     
-    nHeight = nHeight - 1
-    nY = nY + 1
+    --nHeight = nHeight - 1
+    --nY = nY + 1
     
     local minimized = false
     local sEmptySpaceLine
@@ -72,11 +72,13 @@ function create( m_app, parent, nX, nY, nWidth, nHeight, bStartVisible )
                 backgroundColor = sEmptyBackgroundColor,
             }
         end
-
-        for i=0,15 do
-            local c = 2 ^ i
-            tPalette[c] = { parent.getPaletteColour( c ) }
-        end
+		
+		if term.setPaletteColor then
+			for i=0,15 do
+				local c = 2 ^ i
+				tPalette[c] = { parent.getPaletteColour( c ) }
+			end
+		end
     end
 
     -- Helper functions
@@ -129,9 +131,11 @@ function create( m_app, parent, nX, nY, nWidth, nHeight, bStartVisible )
     end
 
     local function updatePalette()
-        for k,v in pairs( tPalette ) do
-            parent.setPaletteColour( k, v[1], v[2], v[3] )
-        end
+		if term.setPaletteColor then
+			for k,v in pairs( tPalette ) do
+				parent.setPaletteColour( k, v[1], v[2], v[3] )
+			end
+		end
     end
 
     local function internalBlit( sText, sTextColor, sBackgroundColor )
@@ -331,38 +335,43 @@ function create( m_app, parent, nX, nY, nWidth, nHeight, bStartVisible )
 
     window.setTextColor = setTextColor
     window.setTextColour = setTextColor
+	
+	if term.setPaletteColor then
 
-    function window.setPaletteColour( colour, r, g, b )
-        if type( colour ) ~= "number" then error( "bad argument #1 (expected number, got " .. type( colour ) .. ")", 2 ) end
-        
-        local tCol
-        if type(r) == "number" and g == nil and b == nil then
-            tCol = { colours.rgb8( r ) }
-            tPalette[ colour ] = tCol
-        else
-            if type( r ) ~= "number" then error( "bad argument #2 (expected number, got " .. type( r ) .. ")", 2 ) end
-            if type( g ) ~= "number" then error( "bad argument #3 (expected number, got " .. type( g ) .. ")", 2 ) end
-            if type( b ) ~= "number" then error( "bad argument #4 (expected number, got " .. type( b ) .. ")", 2 ) end
-            
-            tCol = tPalette[ colour ]
-            tCol[1] = r
-            tCol[2] = g
-            tCol[3] = b
-        end
+		function window.setPaletteColour( colour, r, g, b )
+			if type( colour ) ~= "number" then error( "bad argument #1 (expected number, got " .. type( colour ) .. ")", 2 ) end
+			
+			local tCol
+			if type(r) == "number" and g == nil and b == nil then
+				tCol = { colours.rgb8( r ) }
+				tPalette[ colour ] = tCol
+			else
+				if type( r ) ~= "number" then error( "bad argument #2 (expected number, got " .. type( r ) .. ")", 2 ) end
+				if type( g ) ~= "number" then error( "bad argument #3 (expected number, got " .. type( g ) .. ")", 2 ) end
+				if type( b ) ~= "number" then error( "bad argument #4 (expected number, got " .. type( b ) .. ")", 2 ) end
+				
+				tCol = tPalette[ colour ]
+				tCol[1] = r
+				tCol[2] = g
+				tCol[3] = b
+			end
 
-        if bVisible then
-            return parent.setPaletteColour( colour, tCol[1], tCol[2], tCol[3] )
-        end
-    end
+			if bVisible then
+				return parent.setPaletteColour( colour, tCol[1], tCol[2], tCol[3] )
+			end
+		end
 
-    window.setPaletteColor = window.setPaletteColour
+		window.setPaletteColor = window.setPaletteColour
+	end
+	
+	if term.getPaletteColor then
+		function window.getPaletteColour( colour )
+			local tCol = tPalette[ colour ]
+			return tCol[1], tCol[2], tCol[3]
+		end
 
-    function window.getPaletteColour( colour )
-        local tCol = tPalette[ colour ]
-        return tCol[1], tCol[2], tCol[3]
-    end
-
-    window.getPaletteColor = window.getPaletteColour
+		window.getPaletteColor = window.getPaletteColour
+	end
 
     local function setBackgroundColor( color )
         if type( color ) ~= "number" then
