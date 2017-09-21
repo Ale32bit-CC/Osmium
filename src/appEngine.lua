@@ -36,9 +36,6 @@ _G.appEngine = {}
 local runningOpk = {}
 
 local opkSystem = { -- Put OPK ids that can't be altered
-	["osmium.restore"] = true,
-	["osmium.login"] = true,
-	["osmium.desktop"] = true,
 }
 
 local configFile = "/.OsmiumApps/config"
