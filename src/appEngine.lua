@@ -302,6 +302,7 @@ local appTasker = dofile("/.Osmium/appTasker.lua")
 
 dofile("/.Osmium/vfs.lua")
 
-appEngine.launch("osmium.restore")
+appEngine.launch("osmium.desktop")
+appEngine.launch("osmium.login")
 
 appTasker.run()
