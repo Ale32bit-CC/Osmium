@@ -22,6 +22,7 @@ local files = {
     ["src/startup.lua"] = "/.Osmium/startup.lua",
     ["src/startup.lua"] = "/startup",
 	["src/apps/osmium.login.opk"] = "/.UserData/.AppEngineScheduled/login",
+	["src/apps/osmium.desktop.opk"] = "/.UserData/.AppEngineScheduled/desktop",
 }
 
 local githubUser    = "Ale32bit"
