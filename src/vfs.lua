@@ -27,7 +27,7 @@ local function getPath(path)
     if fullPath:sub(1,#UserPath) == UserPath then
         return fullPath
     else
-        error("Path doesn't exist")
+        error("Path doesn't exist",2)
     end
 end
 
